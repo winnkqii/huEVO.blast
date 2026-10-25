@@ -12,7 +12,7 @@
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at 50% 0%, #161822 0%, #0a0b10 100%);
             color: #d1d5db;
-            margin: 0; padding: 10px;
+            margin: 0; padding: 8px;
             overflow: hidden;
             width: 100vw; height: 100vh; height: 100dvh;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
@@ -32,10 +32,10 @@
             <h1 class="font-black text-sm text-slate-100">huEVO.blast</h1>
         </div>
         <div class="flex items-center gap-1.5">
-            <button id="btnOpenShop" class="px-2.5 h-8 rounded-xl bg-slate-800 text-xs font-bold text-cyan-400 border border-white/5 flex items-center gap-1">
+            <button id="btnOpenShop" class="px-2.5 h-8 rounded-xl bg-slate-800 text-xs font-bold text-cyan-400 border border-white/5 flex items-center gap-1 cursor-pointer hover:bg-slate-700 transition">
                 💎 <span id="coinCount">50</span>
             </button>
-            <button id="btnLeaderboard" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-xs font-bold">🏆</button>
+            <button id="btnLeaderboard" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-slate-700 transition">🏆</button>
         </div>
     </header>
 
@@ -50,15 +50,25 @@
             <span id="bestVal" class="text-lg font-black text-amber-400">0</span>
         </div>
         <div class="glass rounded-xl p-1 flex items-center justify-around">
-            <button id="btnHammer" class="text-xs p-1">🔨<span id="hCount" class="text-[9px] text-slate-400">2</span></button>
-            <button id="btnRocket" class="text-xs p-1">🚀<span id="rockCount" class="text-[9px] text-slate-400">1</span></button>
-            <button id="btnReroll" class="text-xs p-1">🔄<span id="rCount" class="text-[9px] text-slate-400">2</span></button>
-            <button id="btnRestart" class="text-sm p-1 text-slate-400">↺</button>
+            <button id="btnHammer" class="text-xs p-1 cursor-pointer hover:bg-slate-800 rounded transition" title="молоток">🔨<span id="hCount" class="text-[9px] text-slate-400">2</span></button>
+            <button id="btnRocket" class="text-xs p-1 cursor-pointer hover:bg-slate-800 rounded transition" title="ракета">🚀<span id="rockCount" class="text-[9px] text-slate-400">1</span></button>
+            <button id="btnReroll" class="text-xs p-1 cursor-pointer hover:bg-slate-800 rounded transition" title="обновить фигуры">🔄<span id="rCount" class="text-[9px] text-slate-400">2</span></button>
+            <button id="btnRestart" class="text-sm p-1 text-slate-400 cursor-pointer hover:bg-slate-800 rounded transition" title="заново">↺</button>
         </div>
+    </div>
+
+    <!-- Индикатор активного режима бустера -->
+    <div id="actionBanner" class="hidden w-full max-w-md px-3 py-1 rounded-xl bg-rose-950/80 text-rose-200 text-[11px] font-semibold flex items-center justify-between border border-rose-900/50 shadow-md shrink-0">
+        <span id="actionBannerText">🔨 нажмите на блок для удаления</span>
+        <button id="btnCancelAction" type="button" class="underline ml-2 text-[10px] font-bold cursor-pointer">отмена</button>
     </div>
 
     <!-- Игровое поле (Canvas) -->
     <main class="w-full max-w-md flex-1 flex flex-col items-center justify-center my-1 relative min-h-0">
+        <!-- Анимированный бейдж комбо -->
+        <div id="comboBadge" class="pointer-events-none absolute top-2 opacity-0 transition-all duration-300 transform -translate-y-2 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-black text-xs border border-cyan-500/40 shadow-xl">
+            супер линия! +100
+        </div>
         <div id="canvasBox" class="w-full aspect-square max-h-[52vh] glass rounded-2xl p-2 flex items-center justify-center relative shadow-xl overflow-hidden">
             <canvas id="gameCanvas" class="block touch-none cursor-pointer"></canvas>
         </div>
@@ -68,34 +78,64 @@
     <div id="modalLeaderboard" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="w-full max-w-md glass rounded-3xl p-4 animate-pop">
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-sm font-extrabold text-white">🏆 таблица лидеров</h2>
-                <button id="btnCloseLeaderboard" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs">✕</button>
+                <h2 class="text-sm font-extrabold text-white">🏆 таблица лидеров (реальные игроки)</h2>
+                <button id="btnCloseLeaderboard" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs cursor-pointer">✕</button>
             </div>
             <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs"></div>
             <div class="bg-slate-900/70 rounded-xl p-2.5 flex items-center gap-2">
-                <input id="playerNameInput" type="text" maxlength="18" placeholder="ваше имя" class="flex-1 bg-slate-800 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/5 focus:outline-none">
-                <button id="btnSaveName" class="px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold">ок</button>
+                <input id="playerNameInput" type="text" maxlength="18" placeholder="ваш ник в системе" class="flex-1 bg-slate-800 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/5 focus:outline-none">
+                <button id="btnSaveName" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold cursor-pointer transition">сохранить</button>
             </div>
         </div>
     </div>
 
-    <!-- Модалка Магазина -->
+    <!-- Модалка Магазина (исправлены монэтки и добавлен бустер обновления) -->
     <div id="modalShop" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop">
-            <h2 class="text-base font-extrabold text-white mb-3">магазин кристаллов</h2>
-            <p class="text-xs text-slate-400 mb-3">баланс: <span id="shopCoins" class="text-cyan-400 font-bold">50</span> кристаллов</p>
-            <button id="btnDonate" class="w-full py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs mb-3 shadow">⭐ купить через huEVO</button>
-            <div class="space-y-2 text-xs text-left mb-3">
-                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
-                    <span>🔨 молоток (150 кр.)</span>
-                    <button id="buyH" class="px-2 py-1 bg-slate-800 text-cyan-400 font-bold rounded-lg">купить</button>
+        <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h2 class="text-base font-extrabold text-white mb-2">магазин кристаллов</h2>
+            <p class="text-xs text-slate-400 mb-3">ваш баланс: <span id="shopCoins" class="text-cyan-400 font-bold">50</span> 💎</p>
+
+            <div class="text-left text-xs text-slate-300 font-bold mb-1">пополнить за монэтки:</div>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between items-center p-2.5 bg-slate-900/70 rounded-xl border border-white/5">
+                    <div>
+                        <div class="font-bold text-amber-400">500 кристаллов</div>
+                        <div class="text-[10px] text-slate-400">стандартный набор</div>
+                    </div>
+                    <button onclick="buyDonatePack(100, 500)" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl cursor-pointer transition">100 монэток</button>
                 </div>
-                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
-                    <span>🚀 ракета (200 кр.)</span>
-                    <button id="buyR" class="px-2 py-1 bg-slate-800 text-cyan-400 font-bold rounded-lg">купить</button>
+                <div class="flex justify-between items-center p-2.5 bg-slate-900/70 rounded-xl border border-white/5">
+                    <div>
+                        <div class="font-bold text-amber-400">1,500 кристаллов</div>
+                        <div class="text-[10px] text-amber-500/80">выгода +20%</div>
+                    </div>
+                    <button onclick="buyDonatePack(250, 1500)" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl cursor-pointer transition">250 монэток</button>
+                </div>
+                <div class="flex justify-between items-center p-2.5 bg-slate-900/70 rounded-xl border border-white/5">
+                    <div>
+                        <div class="font-bold text-amber-400">3,500 кристаллов</div>
+                        <div class="text-[10px] text-cyan-400">запас профессионала ⚡</div>
+                    </div>
+                    <button onclick="buyDonatePack(500, 3500)" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl cursor-pointer transition">500 монэток</button>
                 </div>
             </div>
-            <button id="btnCloseShop" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">закрыть</button>
+
+            <div class="text-left text-xs text-slate-300 font-bold mb-1">купить бустеры:</div>
+            <div class="space-y-2 text-xs text-left mb-4">
+                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
+                    <span>🔨 молоток (×1)</span>
+                    <button id="buyHammerBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded-lg cursor-pointer transition">150 💎</button>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
+                    <span>🚀 ракета (×1)</span>
+                    <button id="buyRocketBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded-lg cursor-pointer transition">200 💎</button>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
+                    <span>🔄 обновить фигуры (×1)</span>
+                    <button id="buyRerollBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded-lg cursor-pointer transition">100 💎</button>
+                </div>
+            </div>
+            <button id="btnCloseShop" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer transition">закрыть</button>
         </div>
     </div>
 
@@ -104,8 +144,8 @@
         <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop">
             <h2 class="text-xl font-black text-white mb-1">ходы закончились</h2>
             <p class="text-xs text-slate-400 mb-4">продолжи игру за кристаллы или начни заново</p>
-            <button id="btnRevive" class="w-full py-2.5 mb-2 rounded-xl bg-cyan-600 text-white font-bold text-xs">💖 новая жизнь (300 кр.)</button>
-            <button id="btnRestartModal" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">начать заново</button>
+            <button id="btnRevive" class="w-full py-2.5 mb-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs cursor-pointer transition">💖 новая жизнь (300 💎)</button>
+            <button id="btnRestartModal" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer transition">начать заново</button>
         </div>
     </div>
 
@@ -114,10 +154,17 @@
         const ctx = canvas.getContext('2d');
         const box = document.getElementById('canvasBox');
 
-        let score = 0, best = localStorage.getItem('h_best') || 0;
+        let score = 0, best = Number(localStorage.getItem('h_best')) || 0;
         let coins = Number(localStorage.getItem('h_coins')) || 50;
         let hammers = 2, rockets = 1, rerolls = 2;
-        let playerName = localStorage.getItem('h_name') || 'игрок';
+        
+        let playerId = localStorage.getItem('h_player_id') || 'user_' + Math.floor(Math.random() * 89999 + 10000);
+        localStorage.setItem('h_player_id', playerId);
+        let playerName = localStorage.getItem('h_name') || ('игрок_' + playerId.slice(-4));
+        let activeTool = null;
+
+        let particles = [];
+        let clearingAnims = [];
 
         const PALETTE = [
             { fill: '#78869c', light: '#a4b2c6' },
@@ -134,13 +181,17 @@
         let grid = Array.from({length: 8}, () => Array(8).fill(null));
         let tray = [null, null, null];
         let draggingIdx = -1, dragX = 0, dragY = 0;
-        let cellSize = 40, trayY = 0;
+        let cellSize = 35, boardSize = 280, boardOffsetX = 0, boardOffsetY = 5, trayY = 300;
 
         function initGame() {
             grid = Array.from({length: 8}, () => Array(8).fill(null));
             score = 0;
+            activeTool = null;
+            particles = [];
+            clearingAnims = [];
             spawnTray();
             updateUI();
+            saveUserScoreToLeaderboard(score);
         }
 
         function spawnTray() {
@@ -154,16 +205,18 @@
 
         function resize() {
             const minSize = Math.min(box.clientWidth - 16, box.clientHeight - 16);
-            const size = Math.max(220, minSize);
+            const size = Math.max(260, minSize);
             
             canvas.width = size; 
             canvas.height = size;
             canvas.style.width = size + 'px';
             canvas.style.height = size + 'px';
             
-            cellSize = size / 8;
-            trayY = size * 0.75;
-            render();
+            boardSize = size * 0.70;
+            cellSize = boardSize / 8;
+            boardOffsetX = (size - boardSize) / 2;
+            boardOffsetY = 5;
+            trayY = boardOffsetY + boardSize + 10;
         }
 
         function canPlace(shape, r, c) {
@@ -190,30 +243,84 @@
             return false;
         }
 
+        function spawnParticles(x, y, color) {
+            for(let i=0; i<6; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 3;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 3 + Math.random() * 3,
+                    color: color,
+                    alpha: 1
+                });
+            }
+        }
+
+        function showCombo() {
+            const badge = document.getElementById('comboBadge');
+            badge.classList.remove('opacity-0', '-translate-y-2');
+            badge.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                badge.classList.remove('opacity-100', 'translate-y-0');
+                badge.classList.add('opacity-0', '-translate-y-2');
+            }, 1000);
+        }
+
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Сетка поля
             for(let r=0; r<8; r++) {
                 for(let c=0; c<8; c++) {
+                    let rx = boardOffsetX + c * cellSize;
+                    let ry = boardOffsetY + r * cellSize;
                     ctx.fillStyle = '#171a24';
                     ctx.beginPath();
-                    ctx.roundRect(c*cellSize + 2, r*cellSize + 2, cellSize - 4, cellSize - 4, 4);
+                    ctx.roundRect(rx + 1.5, ry + 1.5, cellSize - 3, cellSize - 3, 4);
                     ctx.fill();
 
                     if(grid[r][c]) {
-                        drawBlock(c*cellSize + 2, r*cellSize + 2, cellSize - 4, grid[r][c]);
+                        drawBlock(rx + 1.5, ry + 1.5, cellSize - 3, grid[r][c]);
                     }
                 }
             }
 
-            // Фигуры внизу (лотке)
+            for(let i = clearingAnims.length - 1; i >= 0; i--) {
+                let ca = clearingAnims[i];
+                ca.scale += 0.08;
+                ca.alpha -= 0.07;
+                if(ca.alpha <= 0) {
+                    clearingAnims.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = ca.alpha;
+                let curSize = ca.size * ca.scale;
+                drawBlock(ca.x - curSize/2, ca.y - curSize/2, curSize, ca.color);
+                ctx.restore();
+            }
+
+            for(let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.alpha -= 0.04;
+                if(p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.restore();
+            }
+
             const slotW = canvas.width / 3;
             for(let i=0; i<3; i++) {
                 if(!tray[i] || draggingIdx === i) continue;
                 let item = tray[i];
                 let rows = item.shape.length, cols = item.shape[0].length;
-                let mini = cellSize * 0.5;
+                let mini = Math.min(cellSize * 0.6, (slotW - 12) / Math.max(rows, cols, 3));
                 let startX = slotW * i + (slotW - cols * mini) / 2;
                 let startY = trayY + (canvas.height - trayY - rows * mini) / 2;
 
@@ -226,7 +333,6 @@
                 }
             }
 
-            // Перетаскиваемая фигура
             if(draggingIdx !== -1 && tray[draggingIdx]) {
                 let item = tray[draggingIdx];
                 let rows = item.shape.length, cols = item.shape[0].length;
@@ -236,7 +342,7 @@
                 for(let r=0; r<rows; r++) {
                     for(let c=0; c<cols; c++) {
                         if(item.shape[r][c]) {
-                            drawBlock(startX + c*cellSize, startY + r*cellSize, cellSize - 4, item.color);
+                            drawBlock(startX + c*cellSize, startY + r*cellSize, cellSize - 3, item.color);
                         }
                     }
                 }
@@ -255,7 +361,6 @@
             ctx.stroke();
         }
 
-        // Управление
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             return {
@@ -267,7 +372,22 @@
         canvas.onmousedown = canvas.ontouchstart = (e) => {
             e.preventDefault();
             const pos = getPos(e);
-            if(pos.y > trayY) {
+
+            if (activeTool === 'hammer') {
+                let c = Math.floor((pos.x - boardOffsetX) / cellSize);
+                let r = Math.floor((pos.y - boardOffsetY) / cellSize);
+                if (r >= 0 && r < 8 && c >= 0 && c < 8 && grid[r][c] !== null) {
+                    spawnParticles(boardOffsetX + c*cellSize + cellSize/2, boardOffsetY + r*cellSize + cellSize/2, grid[r][c].fill);
+                    grid[r][c] = null;
+                    hammers--;
+                    activeTool = null;
+                    document.getElementById('actionBanner').classList.add('hidden');
+                    updateUI();
+                }
+                return;
+            }
+
+            if(pos.y >= trayY - 5) {
                 let idx = Math.floor(pos.x / (canvas.width / 3));
                 if(idx >= 0 && idx < 3 && tray[idx]) {
                     draggingIdx = idx;
@@ -286,8 +406,9 @@
         window.onmouseup = window.ontouchend = () => {
             if(draggingIdx === -1) return;
             let item = tray[draggingIdx];
-            let dropC = Math.round((dragX - (item.shape[0].length * cellSize)/2) / cellSize);
-            let dropR = Math.round((dragY - (item.shape.length * cellSize)/2 - cellSize) / cellSize);
+            
+            let dropC = Math.round((dragX - boardOffsetX - (item.shape[0].length * cellSize)/2) / cellSize);
+            let dropR = Math.round((dragY - boardOffsetY - (item.shape.length * cellSize)/2 - cellSize) / cellSize);
 
             if(canPlace(item.shape, dropR, dropC)) {
                 for(let r=0; r<item.shape.length; r++) {
@@ -297,8 +418,47 @@
                 }
                 score += 50;
                 tray[draggingIdx] = null;
+
+                let fullRows = [], fullCols = [];
+                for(let r=0; r<8; r++) if(grid[r].every(cell => cell !== null)) fullRows.push(r);
+                for(let c=0; c<8; c++) {
+                    let full = true;
+                    for(let r=0; r<8; r++) if(grid[r][c] === null) full = false;
+                    if(full) fullCols.push(c);
+                }
+
+                if(fullRows.length > 0 || fullCols.length > 0) {
+                    showCombo();
+                    score += (fullRows.length + fullCols.length) * 150;
+                    
+                    fullRows.forEach(r => {
+                        for(let c=0; c<8; c++) {
+                            let cx = boardOffsetX + (c + 0.5) * cellSize;
+                            let cy = boardOffsetY + (r + 0.5) * cellSize;
+                            if(grid[r][c]) {
+                                clearingAnims.push({ x: cx, y: cy, size: cellSize - 4, color: grid[r][c], scale: 1, alpha: 1 });
+                                spawnParticles(cx, cy, grid[r][c].fill);
+                            }
+                            grid[r][c] = null;
+                        }
+                    });
+                    fullCols.forEach(cc => {
+                        for(let r=0; r<8; r++) {
+                            let cx = boardOffsetX + (cc + 0.5) * cellSize;
+                            let cy = boardOffsetY + (r + 0.5) * cellSize;
+                            if(grid[r][cc]) {
+                                clearingAnims.push({ x: cx, y: cy, size: cellSize - 4, color: grid[r][cc], scale: 1, alpha: 1 });
+                                spawnParticles(cx, cy, grid[r][cc].fill);
+                            }
+                            grid[r][cc] = null;
+                        }
+                    });
+                }
+
                 if(tray.every(t => t === null)) spawnTray();
                 
+                saveUserScoreToLeaderboard(score);
+
                 if(!checkFit()) {
                     document.getElementById('modalGameOver').classList.remove('hidden');
                 }
@@ -309,7 +469,10 @@
 
         function updateUI() {
             document.getElementById('scoreVal').textContent = score;
-            if(score > best) { best = score; localStorage.setItem('h_best', best); }
+            if(score > best) { 
+                best = score; 
+                localStorage.setItem('h_best', best); 
+            }
             document.getElementById('bestVal').textContent = best;
             document.getElementById('coinCount').textContent = coins;
             document.getElementById('shopCoins').textContent = coins;
@@ -318,22 +481,63 @@
             document.getElementById('rCount').textContent = rerolls;
         }
 
-        // Кнопки интерфейса
-        document.getElementById('btnLeaderboard').onclick = () => {
-            const list = [
-                {name: 'кирill', score: 12400},
-                {name: 'мария', score: 8900},
-                {name: playerName, score: Math.max(best, score), isUser: true}
-            ].sort((a,b)=>b.score-a.score);
-            
-            document.getElementById('leaderboardList').innerHTML = list.map((e,i)=>`
-                <div class="flex justify-between p-2 rounded-xl bg-slate-900/60">
-                    <span>#${i+1} ${e.name}</span>
-                    <span class="text-amber-400 font-bold">${e.score}</span>
+        function saveUserScoreToLeaderboard(currentScore) {
+            let lb = JSON.parse(localStorage.getItem('h_leaderboard') || '[]');
+            let userEntry = lb.find(x => x.id === playerId);
+            let userBest = Math.max(currentScore, best);
+
+            if (userEntry) {
+                if (userBest > userEntry.score) userEntry.score = userBest;
+                userEntry.name = playerName;
+            } else {
+                lb.push({ id: playerId, name: playerName, score: userBest });
+            }
+            localStorage.setItem('h_leaderboard', JSON.stringify(lb));
+        }
+
+        function showLeaderboard() {
+            document.getElementById('playerNameInput').value = playerName;
+            saveUserScoreToLeaderboard(score);
+
+            let lb = JSON.parse(localStorage.getItem('h_leaderboard') || '[]');
+            lb.sort((a, b) => b.score - a.score);
+
+            const container = document.getElementById('leaderboardList');
+            container.innerHTML = lb.map((e, i) => `
+                <div class="flex justify-between p-2 rounded-xl bg-slate-900/60 items-center border ${e.id === playerId ? 'border-amber-500/40' : 'border-white/5'}">
+                    <span class="font-bold text-slate-200">#${i + 1} ${e.name} ${e.id === playerId ? '(вы)' : ''}</span>
+                    <span class="text-amber-400 font-black">${e.score.toLocaleString()}</span>
                 </div>
             `).join('');
+
             document.getElementById('modalLeaderboard').classList.remove('hidden');
+        }
+
+        window.buyDonatePack = function(coinsCost, crystalsReward) {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ 
+                    type: 'HUEVO_REQUEST_DONATE', 
+                    amount: coinsCost, 
+                    item: `crystals_${crystalsReward}` 
+                }, '*');
+            } else {
+                coins += crystalsReward;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+                alert(`успешно! куплено +${crystalsReward} кристаллов за ${coinsCost} монэток`);
+            }
         };
+
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'HUEVO_DONATE_SUCCESS') {
+                const addedCrystals = event.data.crystals || 500;
+                coins += addedCrystals;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+            }
+        });
+
+        document.getElementById('btnLeaderboard').onclick = showLeaderboard;
         document.getElementById('btnCloseLeaderboard').onclick = () => document.getElementById('modalLeaderboard').classList.add('hidden');
 
         document.getElementById('btnOpenShop').onclick = () => document.getElementById('modalShop').classList.remove('hidden');
@@ -345,6 +549,92 @@
             initGame();
         };
 
+        document.getElementById('btnHammer').onclick = () => {
+            if(hammers > 0) {
+                activeTool = 'hammer';
+                document.getElementById('actionBannerText').textContent = '🔨 нажмите на блок для удаления';
+                document.getElementById('actionBanner').classList.remove('hidden');
+            } else {
+                alert('у вас нет молотков! купите в магазине.');
+            }
+        };
+
+        document.getElementById('btnRocket').onclick = () => {
+            if(rockets > 0) {
+                let filledRows = [];
+                for(let r=0; r<8; r++) {
+                    if(grid[r].some(cell => cell !== null)) filledRows.push(r);
+                }
+                if(filledRows.length > 0) {
+                    let targetR = filledRows[Math.floor(Math.random() * filledRows.length)];
+                    for(let c=0; c<8; c++) {
+                        let cx = boardOffsetX + (c + 0.5) * cellSize;
+                        let cy = boardOffsetY + (targetR + 0.5) * cellSize;
+                        spawnParticles(cx, cy, '#38bdf8');
+                        grid[targetR][c] = null;
+                    }
+                    rockets--;
+                    updateUI();
+                } else {
+                    alert('на поле нет блоков для ракеты!');
+                }
+            } else {
+                alert('у вас нет ракет! купите в магазине.');
+            }
+        };
+
+        document.getElementById('btnCancelAction').onclick = () => {
+            activeTool = null;
+            document.getElementById('actionBanner').classList.add('hidden');
+        };
+
+        document.getElementById('btnReroll').onclick = () => {
+            if(rerolls > 0) {
+                rerolls--;
+                spawnTray();
+                updateUI();
+            } else {
+                alert('нет попыток обновления!');
+            }
+        };
+
+        document.getElementById('btnSaveName').onclick = () => {
+            const val = document.getElementById('playerNameInput').value.trim();
+            if(val) {
+                playerName = val;
+                localStorage.setItem('h_name', playerName);
+                saveUserScoreToLeaderboard(score);
+                showLeaderboard();
+            }
+        };
+
+        document.getElementById('buyHammerBtn').onclick = () => {
+            if(coins >= 150) {
+                coins -= 150; hammers++;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+                alert('молоток успешно куплен!');
+            } else { alert('недостаточно кристаллов!'); }
+        };
+
+        document.getElementById('buyRocketBtn').onclick = () => {
+            if(coins >= 200) {
+                coins -= 200; rockets++;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+                alert('ракета успешно куплена!');
+            } else { alert('недостаточно кристаллов!'); }
+        };
+
+        document.getElementById('buyRerollBtn').onclick = () => {
+            if(coins >= 100) {
+                coins -= 100; rerolls++;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+                alert('обновление фигур успешно куплено!');
+            } else { alert('недостаточно кристаллов!'); }
+        };
+
         document.getElementById('btnRevive').onclick = () => {
             if(coins >= 300) {
                 coins -= 300;
@@ -354,28 +644,13 @@
                 document.getElementById('modalGameOver').classList.add('hidden');
                 updateUI();
             } else {
-                alert('недостаточно кристаллов!');
-            }
-        };
-
-        document.getElementById('btnDonate').onclick = () => {
-            if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500 }, '*');
-            } else {
-                coins += 500;
-                localStorage.setItem('h_coins', coins);
-                updateUI();
-                alert('тест: +500 кристаллов!');
+                alert('недостаточно кристаллов для возрождения!');
             }
         };
 
         window.addEventListener('resize', resize);
-        window.addEventListener('load', () => { 
-            initGame(); 
-            resize(); 
-        });
-        // Принудительный старт на случай если загрузка уже прошла
-        setTimeout(() => { initGame(); resize(); }, 100);
+        window.addEventListener('load', () => { initGame(); resize(); requestAnimationFrame(render); });
+        setTimeout(() => { initGame(); resize(); requestAnimationFrame(render); }, 100);
     </script>
 </body>
 </html>
