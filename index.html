@@ -10,7 +10,7 @@
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
         body {
             font-family: 'Inter', sans-serif;
-            background: #0a0b10;
+            background: radial-gradient(circle at 50% 0%, #161822 0%, #0a0b10 100%);
             color: #d1d5db;
             margin: 0; padding: 0;
             overflow: hidden;
@@ -18,26 +18,29 @@
             display: flex; flex-direction: column; align-items: center; justify-between;
         }
         .glass { background: rgba(22, 25, 35, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06); }
+        @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="h-full flex flex-col items-center justify-between p-3">
+<body class="h-full flex flex-col items-center justify-between p-2 sm:p-3">
 
     <!-- Шапка -->
-    <header class="w-full max-w-md glass rounded-2xl px-3 py-2 flex items-center justify-between shadow-lg">
+    <header class="w-full max-w-md glass rounded-2xl px-3 py-2 flex items-center justify-between shadow-lg shrink-0">
         <div class="flex items-center gap-2">
             <span class="text-xl">🧩</span>
             <h1 class="font-black text-sm text-slate-100">huEVO.blast</h1>
         </div>
-        <div class="flex items-center gap-2">
-            <button id="btnOpenShop" class="px-2.5 py-1 rounded-xl bg-slate-800 text-xs font-bold text-cyan-400 border border-white/5">
+        <div class="flex items-center gap-1.5">
+            <button id="btnOpenShop" class="px-2.5 h-8 rounded-xl bg-slate-800 text-xs font-bold text-cyan-400 border border-white/5 flex items-center gap-1">
                 💎 <span id="coinCount">50</span>
             </button>
-            <button id="btnLeaderboard" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-xs">🏆</button>
+            <button id="btnLeaderboard" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-xs font-bold">🏆</button>
         </div>
     </header>
 
     <!-- Счет и бустеры -->
-    <div class="w-full max-w-md grid grid-cols-3 gap-2">
+    <div class="w-full max-w-md grid grid-cols-3 gap-2 shrink-0">
         <div class="glass rounded-xl p-2 flex flex-col justify-center">
             <span class="text-[9px] text-slate-500 uppercase font-bold">счёт</span>
             <span id="scoreVal" class="text-lg font-black text-white">0</span>
@@ -47,91 +50,212 @@
             <span id="bestVal" class="text-lg font-black text-amber-400">0</span>
         </div>
         <div class="glass rounded-xl p-1 flex items-center justify-around">
-            <button id="btnHammer" class="text-base p-1">🔨<span id="hCount" class="text-[10px] text-slate-400">2</span></button>
-            <button id="btnReroll" class="text-base p-1">🔄<span id="rCount" class="text-[10px] text-slate-400">2</span></button>
+            <button id="btnHammer" class="text-xs p-1">🔨<span id="hCount" class="text-[9px] text-slate-400">2</span></button>
+            <button id="btnRocket" class="text-xs p-1">🚀<span id="rockCount" class="text-[9px] text-slate-400">1</span></button>
+            <button id="btnReroll" class="text-xs p-1">🔄<span id="rCount" class="text-[9px] text-slate-400">2</span></button>
             <button id="btnRestart" class="text-sm p-1 text-slate-400">↺</button>
         </div>
     </div>
 
-    <!-- Игровое поле (Canvas) -->
-    <main class="relative w-full max-w-md flex-1 flex flex-col items-center justify-center my-2">
-        <div id="canvasBox" class="w-full aspect-square max-h-[60vh] glass rounded-2xl p-2 flex items-center justify-center shadow-xl overflow-hidden">
-            <canvas id="gameCanvas" class="w-full h-full rounded-xl touch-none"></canvas>
+    <!-- Игровое поле (Canvas) + фигуры внизу -->
+    <main class="relative w-full max-w-md flex-1 flex flex-col items-center justify-center my-1 min-h-0">
+        <div id="canvasBox" class="w-full aspect-square max-h-[58vh] glass rounded-2xl p-2 flex flex-col items-center justify-center relative shadow-xl overflow-hidden">
+            <canvas id="gameCanvas" class="w-full h-full rounded-xl touch-none cursor-pointer"></canvas>
         </div>
     </main>
 
-    <!-- Модалка магазина -->
-    <div id="shopModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="w-full max-w-sm glass rounded-3xl p-5 text-center">
+    <!-- Модалка Лидерборда -->
+    <div id="modalLeaderboard" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="w-full max-w-md glass rounded-3xl p-4 animate-pop">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-extrabold text-white">🏆 таблица лидеров</h2>
+                <button id="btnCloseLeaderboard" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs">✕</button>
+            </div>
+            <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs"></div>
+            <div class="bg-slate-900/70 rounded-xl p-2.5 flex items-center gap-2">
+                <input id="playerNameInput" type="text" maxlength="18" placeholder="ваше имя" class="flex-1 bg-slate-800 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/5 focus:outline-none">
+                <button id="btnSaveName" class="px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold">ок</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка Магазина -->
+    <div id="modalShop" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop">
             <h2 class="text-base font-extrabold text-white mb-3">магазин кристаллов</h2>
-            <p class="text-xs text-slate-400 mb-4">ваш баланс: <span id="shopCoins" class="text-cyan-400 font-bold">50</span> кристаллов</p>
-            <button id="btnDonate" class="w-full py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs mb-3">⭐ купить через huEVO</button>
+            <p class="text-xs text-slate-400 mb-3">баланс: <span id="shopCoins" class="text-cyan-400 font-bold">50</span> кристаллов</p>
+            <button id="btnDonate" class="w-full py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs mb-3 shadow">⭐ купить через huEVO</button>
+            <div class="space-y-2 text-xs text-left mb-3">
+                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
+                    <span>🔨 молоток (150 кр.)</span>
+                    <button id="buyH" class="px-2 py-1 bg-slate-800 text-cyan-400 font-bold rounded-lg">купить</button>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-xl">
+                    <span>🚀 ракета (200 кр.)</span>
+                    <button id="buyR" class="px-2 py-1 bg-slate-800 text-cyan-400 font-bold rounded-lg">купить</button>
+                </div>
+            </div>
             <button id="btnCloseShop" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">закрыть</button>
         </div>
     </div>
 
+    <!-- Модалка Проигрыша / Новая жизнь -->
+    <div id="modalGameOver" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        которая заменяет всё
+        <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop">
+            <h2 class="text-xl font-black text-white mb-1">ходы закончились</h2>
+            <p class="text-xs text-slate-400 mb-4">продолжи игру за кристаллы или начни заново</p>
+            <button id="btnRevive" class="w-full py-2.5 mb-2 rounded-xl bg-cyan-600 text-white font-bold text-xs">💖 новая жизнь (300 кр.)</button>
+            <button id="btnRestartModal" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">начать заново</button>
+        </div>
+    </div>
+
     <script>
-        // Простой и надежный движок игры
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const box = document.getElementById('canvasBox');
 
         let score = 0, best = localStorage.getItem('h_best') || 0;
         let coins = Number(localStorage.getItem('h_coins')) || 50;
-        let grid = Array.from({length: 8}, () => Array(8).fill(null));
-        let cellSize = 40, boardX = 0, boardY = 0;
+        let hammers = 2, rockets = 1, rerolls = 2;
+        let playerName = localStorage.getItem('h_name') || 'игрок';
 
-        document.getElementById('bestVal').textContent = best;
-        document.getElementById('coinCount').textContent = coins;
+        const PALETTE = [
+            { fill: '#78869c', light: '#a4b2c6' },
+            { fill: '#9c7cb5', light: '#cbb3de' },
+            { fill: '#4a9c90', light: '#86d4c8' },
+            { fill: '#c99351', light: '#ebd0ab' },
+            { fill: '#b86b87', light: '#e8acc1' }
+        ];
+
+        const SHAPES = [
+            [[1]], [[1,1]], [[1],[1]], [[1,1,1]], [[1,1],[1,1]], [[1,1,1],[1,0,0],[1,0,0]]
+        ];
+
+        let grid = Array.from({length: 8}, () => Array(8).fill(null));
+        let tray = [null, null, null];
+        let draggingIdx = -1, dragX = 0, dragY = 0, hoverR = -1, hoverC = -1;
+        let cellSize = 40, boardSize = 320, boardX = 0, boardY = 0, trayY = 0;
+
+        function initGame() {
+            grid = Array.from({length: 8}, () => Array(8).fill(null));
+            score = 0;
+            spawnTray();
+            updateUI();
+        }
+
+        function spawnTray() {
+            for(let i=0; i<3; i++) {
+                tray[i] = {
+                    shape: SHAPES[Math.floor(Math.random()*SHAPES.length)],
+                    color: PALETTE[Math.floor(Math.random()*PALETTE.length)]
+                };
+            }
+        }
 
         function resize() {
             const size = Math.min(box.clientWidth - 16, box.clientHeight - 16);
             canvas.width = size; canvas.height = size;
             cellSize = size / 8;
+            boardSize = cellSize * 8;
+            boardX = 0;
+            boardY = 5;
+            trayY = size * 0.72;
             render();
+        }
+
+        function canPlace(shape, r, c) {
+            for(let i=0; i<shape.length; i++) {
+                for(let j=0; j<shape[i].length; j++) {
+                    if(shape[i][j]) {
+                        let gr = r + i, gc = c + j;
+                        if(gr < 0 || gr >= 8 || gc < 0 || gc >= 8 || grid[gr][gc] !== null) return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function checkFit() {
+            for(let i=0; i<3; i++) {
+                if(!tray[i]) continue;
+                for(let r=0; r<8; r++) {
+                    for(let c=0; c<8; c++) {
+                        if(canPlace(tray[i].shape, r, c)) return true;
+                    }
+                }
+            }
+            return false;
         }
 
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Рисуем сетку 8х8
+
+            // Сетка поля
             for(let r=0; r<8; r++) {
                 for(let c=0; c<8; c++) {
                     ctx.fillStyle = '#171a24';
                     ctx.beginPath();
                     ctx.roundRect(c*cellSize + 2, r*cellSize + 2, cellSize - 4, cellSize - 4, 4);
                     ctx.fill();
-                    
+
                     if(grid[r][c]) {
-                        ctx.fillStyle = grid[r][c];
-                        ctx.beginPath();
-                        ctx.roundRect(c*cellSize + 3, r*cellSize + 3, cellSize - 6, cellSize - 6, 5);
-                        ctx.fill();
+                        drawBlock(c*cellSize + 2, r*cellSize + 2, cellSize - 4, grid[r][c]);
                     }
                 }
             }
+
+            // Фигуры внизу (лотке)
+            const slotW = canvas.width / 3;
+            for(let i=0; i<3; i++) {
+                if(!tray[i] || draggingIdx === i) continue;
+                let item = tray[i];
+                let rows = item.shape.length, cols = item.shape[0].length;
+                let mini = cellSize * 0.55;
+                let startX = slotW * i + (slotW - cols * mini) / 2;
+                let startY = trayY + (canvas.height - trayY - rows * mini) / 2;
+
+                for(let r=0; r<rows; r++) {
+                    for(let c=0; c<cols; c++) {
+                        if(item.shape[r][c]) {
+                            drawBlock(startX + c*mini, startY + r*mini, mini - 2, item.color);
+                        }
+                    }
+                }
+            }
+
+            // Перетаскиваемая фигура
+            if(draggingIdx !== -1 && tray[draggingIdx]) {
+                let item = tray[draggingIdx];
+                let rows = item.shape.length, cols = item.shape[0].length;
+                let startX = dragX - (cols * cellSize) / 2;
+                let startY = dragY - (rows * cellSize) / 2 - cellSize;
+
+                for(let r=0; r<rows; r++) {
+                    for(let c=0; c<cols; c++) {
+                        if(item.shape[r][c]) {
+                            drawBlock(startX + c*cellSize, startY + r*cellSize, cellSize - 4, item.color);
+                        }
+                    }
+                }
+            }
+
+            requestAnimationFrame(render);
         }
 
-        // Управление модалкой магазина
-        document.getElementById('btnOpenShop').onclick = () => {
-            document.getElementById('shopCoins').textContent = coins;
-            document.getElementById('shopModal').classList.remove('hidden');
-        };
-        document.getElementById('btnCloseShop').onclick = () => document.getElementById('shopModal').classList.add('hidden');
+        function drawBlock(x, y, size, color) {
+            ctx.fillStyle = color.fill;
+            ctx.beginPath();
+            ctx.roundRect(x, y, size, size, 4);
+            ctx.fill();
+            ctx.strokeStyle = color.light;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
 
-        // Донат через huEVO
-        document.getElementById('btnDonate').onclick = () => {
-            if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500 }, '*');
-            } else {
-                coins += 500;
-                localStorage.setItem('h_coins', coins);
-                document.getElementById('coinCount').textContent = coins;
-                alert('тест: +500 кристаллов добавлено!');
-            }
-        };
-
-        window.addEventListener('resize', resize);
-        window.addEventListener('load', resize);
-    </script>
-</body>
-</html>
+        // Управление касаниями / мышкой
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+                y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
