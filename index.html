@@ -35,6 +35,7 @@
             <button id="btnOpenShop" class="px-2.5 h-8 rounded-xl bg-slate-800 text-xs font-bold text-cyan-400 border border-white/5 flex items-center gap-1 cursor-pointer hover:bg-slate-700 transition">
                 💎 <span id="coinCount">50</span>
             </button>
+            <button id="btnToggleSound" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-slate-700 transition" title="звук">🔊</button>
             <button id="btnLeaderboard" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-slate-700 transition">🏆</button>
         </div>
     </header>
@@ -65,11 +66,10 @@
 
     <!-- Игровое поле (Canvas) -->
     <main class="w-full max-w-md flex-1 flex flex-col items-center justify-center my-1 relative min-h-0">
-        <!-- Анимированный бейдж комбо -->
-        <div id="comboBadge" class="pointer-events-none absolute top-2 opacity-0 transition-all duration-300 transform -translate-y-2 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-black text-xs border border-cyan-500/40 shadow-xl">
+        <div id="comboBadge" class="pointer-events-none absolute top-1 opacity-0 transition-all duration-300 transform -translate-y-2 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-black text-xs border border-cyan-500/40 shadow-xl z-10">
             супер линия! +100
         </div>
-        <div id="canvasBox" class="w-full aspect-square max-h-[52vh] glass rounded-2xl p-2 flex items-center justify-center relative shadow-xl overflow-hidden">
+        <div id="canvasBox" class="w-full aspect-square max-h-[56vh] glass rounded-2xl p-2 flex items-center justify-center relative shadow-xl overflow-hidden">
             <canvas id="gameCanvas" class="block touch-none cursor-pointer"></canvas>
         </div>
     </main>
@@ -78,10 +78,12 @@
     <div id="modalLeaderboard" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="w-full max-w-md glass rounded-3xl p-4 animate-pop">
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-sm font-extrabold text-white">🏆 таблица лидеров (реальные игроки)</h2>
+                <h2 class="text-sm font-extrabold text-white">🏆 глобальная таблица лидеров</h2>
                 <button id="btnCloseLeaderboard" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs cursor-pointer">✕</button>
             </div>
-            <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs"></div>
+            <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs">
+                <div class="text-center text-slate-400 py-3">загрузка топа игроков...</div>
+            </div>
             <div class="bg-slate-900/70 rounded-xl p-2.5 flex items-center gap-2">
                 <input id="playerNameInput" type="text" maxlength="18" placeholder="ваш ник в системе" class="flex-1 bg-slate-800 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/5 focus:outline-none">
                 <button id="btnSaveName" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold cursor-pointer transition">сохранить</button>
@@ -89,7 +91,7 @@
         </div>
     </div>
 
-    <!-- Модалка Магазина (исправлены монэтки и добавлен бустер обновления) -->
+    <!-- Модалка Магазина -->
     <div id="modalShop" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop max-h-[90vh] overflow-y-auto no-scrollbar">
             <h2 class="text-base font-extrabold text-white mb-2">магазин кристаллов</h2>
@@ -150,6 +152,41 @@
     </div>
 
     <script>
+        const SoundFX = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            play(freq, type, duration, vol = 0.08) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(vol, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                } catch (e) {}
+            },
+            click() { this.play(320, 'sine', 0.04, 0.05); },
+            place() { this.play(180, 'triangle', 0.08, 0.07); },
+            clear() { this.play(440, 'triangle', 0.15, 0.1); },
+            smash() { this.play(110, 'sawtooth', 0.15, 0.09); },
+            gameOver() { this.play(150, 'sawtooth', 0.25, 0.1); }
+        };
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const box = document.getElementById('canvasBox');
@@ -181,7 +218,7 @@
         let grid = Array.from({length: 8}, () => Array(8).fill(null));
         let tray = [null, null, null];
         let draggingIdx = -1, dragX = 0, dragY = 0;
-        let cellSize = 35, boardSize = 280, boardOffsetX = 0, boardOffsetY = 5, trayY = 300;
+        let cellSize = 35, boardSize = 280, boardOffsetX = 0, boardOffsetY = 2, trayY = 300;
 
         function initGame() {
             grid = Array.from({length: 8}, () => Array(8).fill(null));
@@ -191,7 +228,7 @@
             clearingAnims = [];
             spawnTray();
             updateUI();
-            saveUserScoreToLeaderboard(score);
+            syncScoreToHuevo(score);
         }
 
         function spawnTray() {
@@ -204,19 +241,20 @@
         }
 
         function resize() {
-            const minSize = Math.min(box.clientWidth - 16, box.clientHeight - 16);
-            const size = Math.max(260, minSize);
+            const minSize = Math.min(box.clientWidth - 12, box.clientHeight - 12);
+            const size = Math.max(280, minSize);
             
             canvas.width = size; 
             canvas.height = size;
             canvas.style.width = size + 'px';
             canvas.style.height = size + 'px';
             
-            boardSize = size * 0.70;
+            // Увеличили сетку до 76% холста, чтобы кубики стали крупнее
+            boardSize = size * 0.76;
             cellSize = boardSize / 8;
             boardOffsetX = (size - boardSize) / 2;
-            boardOffsetY = 5;
-            trayY = boardOffsetY + boardSize + 10;
+            boardOffsetY = 2;
+            trayY = boardOffsetY + boardSize + 8;
         }
 
         function canPlace(shape, r, c) {
@@ -277,7 +315,7 @@
                     let ry = boardOffsetY + r * cellSize;
                     ctx.fillStyle = '#171a24';
                     ctx.beginPath();
-                    ctx.roundRect(rx + 1.5, ry + 1.5, cellSize - 3, cellSize - 3, 4);
+                    ctx.roundRect(rx + 1.5, ry + 1.5, cellSize - 3, cellSize - 3, 5);
                     ctx.fill();
 
                     if(grid[r][c]) {
@@ -320,7 +358,7 @@
                 if(!tray[i] || draggingIdx === i) continue;
                 let item = tray[i];
                 let rows = item.shape.length, cols = item.shape[0].length;
-                let mini = Math.min(cellSize * 0.6, (slotW - 12) / Math.max(rows, cols, 3));
+                let mini = Math.min(cellSize * 0.65, (slotW - 10) / Math.max(rows, cols, 3));
                 let startX = slotW * i + (slotW - cols * mini) / 2;
                 let startY = trayY + (canvas.height - trayY - rows * mini) / 2;
 
@@ -337,7 +375,7 @@
                 let item = tray[draggingIdx];
                 let rows = item.shape.length, cols = item.shape[0].length;
                 let startX = dragX - (cols * cellSize) / 2;
-                let startY = dragY - (rows * cellSize) / 2 - cellSize;
+                let startY = dragY - (rows * cellSize) / 2 - cellSize * 1.1;
 
                 for(let r=0; r<rows; r++) {
                     for(let c=0; c<cols; c++) {
@@ -354,7 +392,7 @@
         function drawBlock(x, y, size, color) {
             ctx.fillStyle = color.fill;
             ctx.beginPath();
-            ctx.roundRect(x, y, size, size, 4);
+            ctx.roundRect(x, y, size, size, 5);
             ctx.fill();
             ctx.strokeStyle = color.light;
             ctx.lineWidth = 1.5;
@@ -371,12 +409,14 @@
 
         canvas.onmousedown = canvas.ontouchstart = (e) => {
             e.preventDefault();
+            SoundFX.init();
             const pos = getPos(e);
 
             if (activeTool === 'hammer') {
                 let c = Math.floor((pos.x - boardOffsetX) / cellSize);
                 let r = Math.floor((pos.y - boardOffsetY) / cellSize);
                 if (r >= 0 && r < 8 && c >= 0 && c < 8 && grid[r][c] !== null) {
+                    SoundFX.smash();
                     spawnParticles(boardOffsetX + c*cellSize + cellSize/2, boardOffsetY + r*cellSize + cellSize/2, grid[r][c].fill);
                     grid[r][c] = null;
                     hammers--;
@@ -390,6 +430,7 @@
             if(pos.y >= trayY - 5) {
                 let idx = Math.floor(pos.x / (canvas.width / 3));
                 if(idx >= 0 && idx < 3 && tray[idx]) {
+                    SoundFX.click();
                     draggingIdx = idx;
                     dragX = pos.x; dragY = pos.y;
                 }
@@ -408,9 +449,10 @@
             let item = tray[draggingIdx];
             
             let dropC = Math.round((dragX - boardOffsetX - (item.shape[0].length * cellSize)/2) / cellSize);
-            let dropR = Math.round((dragY - boardOffsetY - (item.shape.length * cellSize)/2 - cellSize) / cellSize);
+            let dropR = Math.round((dragY - boardOffsetY - (item.shape.length * cellSize)/2 - cellSize * 1.1) / cellSize);
 
             if(canPlace(item.shape, dropR, dropC)) {
+                SoundFX.place();
                 for(let r=0; r<item.shape.length; r++) {
                     for(let c=0; c<item.shape[0].length; c++) {
                         if(item.shape[r][c]) grid[dropR + r][dropC + c] = item.color;
@@ -428,6 +470,7 @@
                 }
 
                 if(fullRows.length > 0 || fullCols.length > 0) {
+                    SoundFX.clear();
                     showCombo();
                     score += (fullRows.length + fullCols.length) * 150;
                     
@@ -457,9 +500,10 @@
 
                 if(tray.every(t => t === null)) spawnTray();
                 
-                saveUserScoreToLeaderboard(score);
+                syncScoreToHuevo(score);
 
                 if(!checkFit()) {
+                    SoundFX.gameOver();
                     document.getElementById('modalGameOver').classList.remove('hidden');
                 }
             }
@@ -481,25 +525,38 @@
             document.getElementById('rCount').textContent = rerolls;
         }
 
-        function saveUserScoreToLeaderboard(currentScore) {
-            let lb = JSON.parse(localStorage.getItem('h_leaderboard') || '[]');
-            let userEntry = lb.find(x => x.id === playerId);
+        function syncScoreToHuevo(currentScore) {
             let userBest = Math.max(currentScore, best);
+            
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'HUEVO_SUBMIT_SCORE',
+                    id: playerId,
+                    name: playerName,
+                    score: userBest
+                }, '*');
+            }
 
+            let lb = JSON.parse(localStorage.getItem('h_global_leaderboard') || '[]');
+            let userEntry = lb.find(x => x.id === playerId);
             if (userEntry) {
                 if (userBest > userEntry.score) userEntry.score = userBest;
                 userEntry.name = playerName;
             } else {
                 lb.push({ id: playerId, name: playerName, score: userBest });
             }
-            localStorage.setItem('h_leaderboard', JSON.stringify(lb));
+            localStorage.setItem('h_global_leaderboard', JSON.stringify(lb));
         }
 
         function showLeaderboard() {
             document.getElementById('playerNameInput').value = playerName;
-            saveUserScoreToLeaderboard(score);
+            syncScoreToHuevo(score);
 
-            let lb = JSON.parse(localStorage.getItem('h_leaderboard') || '[]');
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'HUEVO_GET_LEADERBOARD' }, '*');
+            }
+
+            let lb = JSON.parse(localStorage.getItem('h_global_leaderboard') || '[]');
             lb.sort((a, b) => b.score - a.score);
 
             const container = document.getElementById('leaderboardList');
@@ -513,7 +570,27 @@
             document.getElementById('modalLeaderboard').classList.remove('hidden');
         }
 
+        window.addEventListener('message', (event) => {
+            if (!event.data) return;
+            if (event.data.type === 'HUEVO_DONATE_SUCCESS') {
+                const addedCrystals = event.data.crystals || 500;
+                coins += addedCrystals;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+            }
+            if (event.data.type === 'HUEVO_LEADERBOARD_DATA' && event.data.list) {
+                const container = document.getElementById('leaderboardList');
+                container.innerHTML = event.data.list.sort((a,b)=>b.score-a.score).map((e, i) => `
+                    <div class="flex justify-between p-2 rounded-xl bg-slate-900/60 items-center border ${e.id === playerId ? 'border-amber-500/40' : 'border-white/5'}">
+                        <span class="font-bold text-slate-200">#${i + 1} ${e.name} ${e.id === playerId ? '(вы)' : ''}</span>
+                        <span class="text-amber-400 font-black">${e.score.toLocaleString()}</span>
+                    </div>
+                `).join('');
+            }
+        });
+
         window.buyDonatePack = function(coinsCost, crystalsReward) {
+            SoundFX.click();
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage({ 
                     type: 'HUEVO_REQUEST_DONATE', 
@@ -528,14 +605,10 @@
             }
         };
 
-        window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'HUEVO_DONATE_SUCCESS') {
-                const addedCrystals = event.data.crystals || 500;
-                coins += addedCrystals;
-                localStorage.setItem('h_coins', coins);
-                updateUI();
-            }
-        });
+        document.getElementById('btnToggleSound').onclick = () => {
+            SoundFX.enabled = !SoundFX.enabled;
+            document.getElementById('btnToggleSound').textContent = SoundFX.enabled ? '🔊' : '🔇';
+        };
 
         document.getElementById('btnLeaderboard').onclick = showLeaderboard;
         document.getElementById('btnCloseLeaderboard').onclick = () => document.getElementById('modalLeaderboard').classList.add('hidden');
@@ -550,6 +623,7 @@
         };
 
         document.getElementById('btnHammer').onclick = () => {
+            SoundFX.click();
             if(hammers > 0) {
                 activeTool = 'hammer';
                 document.getElementById('actionBannerText').textContent = '🔨 нажмите на блок для удаления';
@@ -560,12 +634,14 @@
         };
 
         document.getElementById('btnRocket').onclick = () => {
+            SoundFX.click();
             if(rockets > 0) {
                 let filledRows = [];
                 for(let r=0; r<8; r++) {
                     if(grid[r].some(cell => cell !== null)) filledRows.push(r);
                 }
                 if(filledRows.length > 0) {
+                    SoundFX.clear();
                     let targetR = filledRows[Math.floor(Math.random() * filledRows.length)];
                     for(let c=0; c<8; c++) {
                         let cx = boardOffsetX + (c + 0.5) * cellSize;
@@ -589,6 +665,7 @@
         };
 
         document.getElementById('btnReroll').onclick = () => {
+            SoundFX.click();
             if(rerolls > 0) {
                 rerolls--;
                 spawnTray();
@@ -603,12 +680,13 @@
             if(val) {
                 playerName = val;
                 localStorage.setItem('h_name', playerName);
-                saveUserScoreToLeaderboard(score);
+                syncScoreToHuevo(score);
                 showLeaderboard();
             }
         };
 
         document.getElementById('buyHammerBtn').onclick = () => {
+            SoundFX.click();
             if(coins >= 150) {
                 coins -= 150; hammers++;
                 localStorage.setItem('h_coins', coins);
@@ -618,6 +696,7 @@
         };
 
         document.getElementById('buyRocketBtn').onclick = () => {
+            SoundFX.click();
             if(coins >= 200) {
                 coins -= 200; rockets++;
                 localStorage.setItem('h_coins', coins);
@@ -627,6 +706,7 @@
         };
 
         document.getElementById('buyRerollBtn').onclick = () => {
+            SoundFX.click();
             if(coins >= 100) {
                 coins -= 100; rerolls++;
                 localStorage.setItem('h_coins', coins);
@@ -636,6 +716,7 @@
         };
 
         document.getElementById('btnRevive').onclick = () => {
+            SoundFX.click();
             if(coins >= 300) {
                 coins -= 300;
                 localStorage.setItem('h_coins', coins);
