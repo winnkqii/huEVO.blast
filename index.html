@@ -12,10 +12,10 @@
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at 50% 0%, #161822 0%, #0a0b10 100%);
             color: #d1d5db;
-            margin: 0; padding: 0;
+            margin: 0; padding: 10px;
             overflow: hidden;
-            height: 100vh; height: 100dvh;
-            display: flex; flex-direction: column; align-items: center; justify-between;
+            width: 100vw; height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
         }
         .glass { background: rgba(22, 25, 35, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06); }
         @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
@@ -23,7 +23,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="h-full flex flex-col items-center justify-between p-2 sm:p-3">
+<body>
 
     <!-- Шапка -->
     <header class="w-full max-w-md glass rounded-2xl px-3 py-2 flex items-center justify-between shadow-lg shrink-0">
@@ -40,7 +40,7 @@
     </header>
 
     <!-- Счет и бустеры -->
-    <div class="w-full max-w-md grid grid-cols-3 gap-2 shrink-0">
+    <div class="w-full max-w-md grid grid-cols-3 gap-2 shrink-0 my-1">
         <div class="glass rounded-xl p-2 flex flex-col justify-center">
             <span class="text-[9px] text-slate-500 uppercase font-bold">счёт</span>
             <span id="scoreVal" class="text-lg font-black text-white">0</span>
@@ -57,10 +57,10 @@
         </div>
     </div>
 
-    <!-- Игровое поле (Canvas) + фигуры внизу -->
-    <main class="relative w-full max-w-md flex-1 flex flex-col items-center justify-center my-1 min-h-0">
-        <div id="canvasBox" class="w-full aspect-square max-h-[58vh] glass rounded-2xl p-2 flex flex-col items-center justify-center relative shadow-xl overflow-hidden">
-            <canvas id="gameCanvas" class="w-full h-full rounded-xl touch-none cursor-pointer"></canvas>
+    <!-- Игровое поле (Canvas) -->
+    <main class="w-full max-w-md flex-1 flex flex-col items-center justify-center my-1 relative min-h-0">
+        <div id="canvasBox" class="w-full aspect-square max-h-[52vh] glass rounded-2xl p-2 flex items-center justify-center relative shadow-xl overflow-hidden">
+            <canvas id="gameCanvas" class="block touch-none cursor-pointer"></canvas>
         </div>
     </main>
 
@@ -99,9 +99,8 @@
         </div>
     </div>
 
-    <!-- Модалка Проигрыша / Новая жизнь -->
+    <!-- Модалка Проигрыша -->
     <div id="modalGameOver" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        которая заменяет всё
         <div class="w-full max-w-sm glass rounded-3xl p-5 text-center animate-pop">
             <h2 class="text-xl font-black text-white mb-1">ходы закончились</h2>
             <p class="text-xs text-slate-400 mb-4">продолжи игру за кристаллы или начни заново</p>
@@ -134,8 +133,8 @@
 
         let grid = Array.from({length: 8}, () => Array(8).fill(null));
         let tray = [null, null, null];
-        let draggingIdx = -1, dragX = 0, dragY = 0, hoverR = -1, hoverC = -1;
-        let cellSize = 40, boardSize = 320, boardX = 0, boardY = 0, trayY = 0;
+        let draggingIdx = -1, dragX = 0, dragY = 0;
+        let cellSize = 40, trayY = 0;
 
         function initGame() {
             grid = Array.from({length: 8}, () => Array(8).fill(null));
@@ -154,13 +153,16 @@
         }
 
         function resize() {
-            const size = Math.min(box.clientWidth - 16, box.clientHeight - 16);
-            canvas.width = size; canvas.height = size;
+            const minSize = Math.min(box.clientWidth - 16, box.clientHeight - 16);
+            const size = Math.max(220, minSize);
+            
+            canvas.width = size; 
+            canvas.height = size;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+            
             cellSize = size / 8;
-            boardSize = cellSize * 8;
-            boardX = 0;
-            boardY = 5;
-            trayY = size * 0.72;
+            trayY = size * 0.75;
             render();
         }
 
@@ -211,7 +213,7 @@
                 if(!tray[i] || draggingIdx === i) continue;
                 let item = tray[i];
                 let rows = item.shape.length, cols = item.shape[0].length;
-                let mini = cellSize * 0.55;
+                let mini = cellSize * 0.5;
                 let startX = slotW * i + (slotW - cols * mini) / 2;
                 let startY = trayY + (canvas.height - trayY - rows * mini) / 2;
 
@@ -253,9 +255,127 @@
             ctx.stroke();
         }
 
-        // Управление касаниями / мышкой
+        // Управление
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             return {
                 x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
                 y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+            };
+        }
+
+        canvas.onmousedown = canvas.ontouchstart = (e) => {
+            e.preventDefault();
+            const pos = getPos(e);
+            if(pos.y > trayY) {
+                let idx = Math.floor(pos.x / (canvas.width / 3));
+                if(idx >= 0 && idx < 3 && tray[idx]) {
+                    draggingIdx = idx;
+                    dragX = pos.x; dragY = pos.y;
+                }
+            }
+        };
+
+        window.onmousemove = window.ontouchmove = (e) => {
+            if(draggingIdx === -1) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            dragX = pos.x; dragY = pos.y;
+        };
+
+        window.onmouseup = window.ontouchend = () => {
+            if(draggingIdx === -1) return;
+            let item = tray[draggingIdx];
+            let dropC = Math.round((dragX - (item.shape[0].length * cellSize)/2) / cellSize);
+            let dropR = Math.round((dragY - (item.shape.length * cellSize)/2 - cellSize) / cellSize);
+
+            if(canPlace(item.shape, dropR, dropC)) {
+                for(let r=0; r<item.shape.length; r++) {
+                    for(let c=0; c<item.shape[0].length; c++) {
+                        if(item.shape[r][c]) grid[dropR + r][dropC + c] = item.color;
+                    }
+                }
+                score += 50;
+                tray[draggingIdx] = null;
+                if(tray.every(t => t === null)) spawnTray();
+                
+                if(!checkFit()) {
+                    document.getElementById('modalGameOver').classList.remove('hidden');
+                }
+            }
+            draggingIdx = -1;
+            updateUI();
+        };
+
+        function updateUI() {
+            document.getElementById('scoreVal').textContent = score;
+            if(score > best) { best = score; localStorage.setItem('h_best', best); }
+            document.getElementById('bestVal').textContent = best;
+            document.getElementById('coinCount').textContent = coins;
+            document.getElementById('shopCoins').textContent = coins;
+            document.getElementById('hCount').textContent = hammers;
+            document.getElementById('rockCount').textContent = rockets;
+            document.getElementById('rCount').textContent = rerolls;
+        }
+
+        // Кнопки интерфейса
+        document.getElementById('btnLeaderboard').onclick = () => {
+            const list = [
+                {name: 'кирill', score: 12400},
+                {name: 'мария', score: 8900},
+                {name: playerName, score: Math.max(best, score), isUser: true}
+            ].sort((a,b)=>b.score-a.score);
+            
+            document.getElementById('leaderboardList').innerHTML = list.map((e,i)=>`
+                <div class="flex justify-between p-2 rounded-xl bg-slate-900/60">
+                    <span>#${i+1} ${e.name}</span>
+                    <span class="text-amber-400 font-bold">${e.score}</span>
+                </div>
+            `).join('');
+            document.getElementById('modalLeaderboard').classList.remove('hidden');
+        };
+        document.getElementById('btnCloseLeaderboard').onclick = () => document.getElementById('modalLeaderboard').classList.add('hidden');
+
+        document.getElementById('btnOpenShop').onclick = () => document.getElementById('modalShop').classList.remove('hidden');
+        document.getElementById('btnCloseShop').onclick = () => document.getElementById('modalShop').classList.add('hidden');
+
+        document.getElementById('btnRestart').onclick = initGame;
+        document.getElementById('btnRestartModal').onclick = () => {
+            document.getElementById('modalGameOver').classList.add('hidden');
+            initGame();
+        };
+
+        document.getElementById('btnRevive').onclick = () => {
+            if(coins >= 300) {
+                coins -= 300;
+                localStorage.setItem('h_coins', coins);
+                grid = Array.from({length: 8}, () => Array(8).fill(null));
+                spawnTray();
+                document.getElementById('modalGameOver').classList.add('hidden');
+                updateUI();
+            } else {
+                alert('недостаточно кристаллов!');
+            }
+        };
+
+        document.getElementById('btnDonate').onclick = () => {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500 }, '*');
+            } else {
+                coins += 500;
+                localStorage.setItem('h_coins', coins);
+                updateUI();
+                alert('тест: +500 кристаллов!');
+            }
+        };
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('load', () => { 
+            initGame(); 
+            resize(); 
+        });
+        // Принудительный старт на случай если загрузка уже прошла
+        setTimeout(() => { initGame(); resize(); }, 100);
+    </script>
+</body>
+</html>
