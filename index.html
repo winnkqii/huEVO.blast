@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>huEVO.blast — игра ради кайфа</title>
+    <title>huEVO.blast — игра для соцсети</title>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -190,7 +190,7 @@
                 🏁
             </div>
             <h2 class="text-xl font-black text-slate-100 mb-0.5">ходы закончились</h2>
-            <p class="text-xs text-slate-400 mb-4">партия завершена. отличный результат!</p>
+            <p class="text-xs text-slate-400 mb-4">партия завершена. результат отправлен в лидерборд!</p>
 
             <div class="grid grid-cols-2 gap-2.5 mb-4">
                 <div class="bg-slate-900/80 rounded-2xl p-2.5 border border-white/5">
@@ -224,7 +224,9 @@
                 </div>
                 <button id="btnCloseLeaderboard" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-xs">✕</button>
             </div>
-            <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs"></div>
+            <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs">
+                <div class="text-center text-slate-500 py-4">загрузка лидеров...</div>
+            </div>
             <div class="bg-slate-900/70 rounded-xl p-2.5 border border-white/5 flex items-center gap-2">
                 <input id="playerNameInput" type="text" maxlength="18" placeholder="ваше имя" class="flex-1 bg-slate-800 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/5 focus:outline-none focus:border-slate-600">
                 <button id="btnSavePlayerName" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">ок</button>
@@ -254,7 +256,7 @@
                 <button id="btnCloseRules" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold">✕</button>
             </div>
             <p class="text-slate-400 leading-relaxed mb-3">
-                размещайте фигуры на сетке 8×8. заполненные линии исчезают с плавной анимацией взрыва, принося очки и монэтки. используйте молоток и обновление, если зашли в тупик!
+                размещайте фигуры на сетке 8×8. линии исчезают с плавной анимацией взрыва, принося очки и монэтки. рекорды автоматически летят в лидерборд huEVO!
             </p>
             <button id="btnCloseRulesBottom" class="w-full py-2 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition">закрыть</button>
         </div>
@@ -510,6 +512,9 @@
                 if (blastState.score > blastState.best) {
                     blastState.best = blastState.score;
                     Storage.set('huevo_blast_best', blastState.best);
+                    
+                    // Автоматическая отправка рекорда в лидерборд huEVO
+                    submitScoreToHuevo(blastState.best);
                 }
 
                 if (blastState.tray.every(t => t === null)) {
@@ -521,9 +526,65 @@
                 if (!canAnyTrayPieceFit()) {
                     blastState.isGameOver = true;
                     SoundFX.gameOver();
+                    submitScoreToHuevo(blastState.score); // отправляем финальный счет
                     setTimeout(() => openGameOverModal(), 500);
                 }
                 return true;
+            }
+
+            // Интеграция лидерборда с платформой huEVO
+            function submitScoreToHuevo(score) {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'HUEVO_SUBMIT_SCORE',
+                        score: score,
+                        name: playerName
+                    }, '*');
+                }
+            }
+
+            function requestLeaderboardFromHuevo() {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'HUEVO_GET_LEADERBOARD' }, '*');
+                } else {
+                    // Тестовый локальный лидерборд, если игра занесена вне платформы
+                    renderLeaderboardUI([
+                        { name: 'кирill', score: 12400 },
+                        { name: 'мария', score: 8900 },
+                        { name: playerName, score: Math.max(blastState.best, blastState.score), isUser: true }
+                    ]);
+                }
+            }
+
+            // Слушаем ответы от платформы huEVO (лидерборд и донат)
+            window.addEventListener('message', (event) => {
+                if (!event.data) return;
+
+                if (event.data.type === 'HUEVO_DONATE_SUCCESS') {
+                    const addedCoins = event.data.coins || 500;
+                    blastState.coins += addedCoins;
+                    Storage.set('huevo_blast_coins', blastState.coins);
+                    updateUI();
+                    showToast(`успешно! получено +${addedCoins} монэток`);
+                }
+
+                if (event.data.type === 'HUEVO_LEADERBOARD_DATA') {
+                    renderLeaderboardUI(event.data.list || []);
+                }
+            });
+
+            function renderLeaderboardUI(rivals) {
+                const container = document.getElementById('leaderboardList');
+                if (!rivals || rivals.length === 0) {
+                    container.innerHTML = `<div class="text-center text-slate-500 py-4">пока нет записей</div>`;
+                    return;
+                }
+                container.innerHTML = rivals.sort((a,b) => b.score - a.score).map((e, i) => `
+                    <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/60 border ${e.name === playerName ? 'border-slate-500' : 'border-white/5'}">
+                        <span class="font-bold text-slate-300">#${i + 1} ${e.name}</span>
+                        <span class="font-black text-amber-400">${e.score.toLocaleString()}</span>
+                    </div>
+                `).join('');
             }
 
             function spawnBurstParticles(x, y, color) {
@@ -826,7 +887,7 @@
 
             document.getElementById('btnRestartGame').addEventListener('click', () => { initBlastGame(); showToast('новая игра'); });
 
-            // Обработка доната через huEVO API
+            // Донат huEVO
             document.getElementById('btnHuevoDonate').addEventListener('click', () => {
                 if (window.parent && window.parent !== window) {
                     window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500 }, '*');
@@ -836,17 +897,6 @@
                     Storage.set('huevo_blast_coins', blastState.coins);
                     updateUI();
                     showToast('успешно добавлено +500 монэток (тест доната)!');
-                }
-            });
-
-            // Слушаем подтверждение оплаты от huEVO
-            window.addEventListener('message', (event) => {
-                if (event.data && event.data.type === 'HUEVO_DONATE_SUCCESS') {
-                    const addedCoins = event.data.coins || 500;
-                    blastState.coins += addedCoins;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    updateUI();
-                    showToast(`успешно! получено +${addedCoins} монэток`);
                 }
             });
 
@@ -890,7 +940,7 @@
 
             ['Leaderboard', 'Publish', 'Rules'].forEach(name => {
                 document.getElementById(`btnOpen${name}`).addEventListener('click', () => {
-                    if (name === 'Leaderboard') renderLeaderboard();
+                    if (name === 'Leaderboard') requestLeaderboardFromHuevo();
                     document.getElementById(`modal${name}`).classList.remove('hidden');
                 });
                 document.getElementById(`btnClose${name}`).addEventListener('click', () => document.getElementById(`modal${name}`).classList.add('hidden'));
@@ -898,24 +948,14 @@
             document.getElementById('btnCloseRulesBottom').addEventListener('click', () => document.getElementById('modalRules').classList.add('hidden'));
             document.getElementById('btnGotItPublish').addEventListener('click', () => document.getElementById('modalPublish').classList.add('hidden'));
 
-            function renderLeaderboard() {
-                const rivals = [
-                    { name: 'кирill', score: 12400 },
-                    { name: 'мария', score: 8900 },
-                    { name: playerName, score: Math.max(blastState.best, blastState.score), isUser: true }
-                ].sort((a, b) => b.score - a.score);
-
-                document.getElementById('leaderboardList').innerHTML = rivals.map((e, i) => `
-                    <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/60 border ${e.isUser ? 'border-slate-600' : 'border-white/5'}">
-                        <span class="font-bold text-slate-300">#${i + 1} ${e.name}</span>
-                        <span class="font-black text-amber-400">${e.score.toLocaleString()}</span>
-                    </div>
-                `).join('');
-            }
-
             document.getElementById('btnSavePlayerName').addEventListener('click', () => {
                 const val = document.getElementById('playerNameInput').value.trim();
-                if (val) { playerName = val; Storage.set('huevo_player_name', playerName); renderLeaderboard(); showToast('сохранено'); }
+                if (val) {
+                    playerName = val;
+                    Storage.set('huevo_player_name', playerName);
+                    showToast('имя сохранено');
+                    submitScoreToHuevo(blastState.best);
+                }
             });
 
             window.addEventListener('resize', resizeCanvas);
