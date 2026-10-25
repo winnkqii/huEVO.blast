@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>huEVO.blast — игра для соцсети</title>
+    <title>huEVO.blast — игра для кайфа</title>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -63,8 +63,8 @@
         </div>
 
         <div class="flex items-center gap-1.5">
-            <button id="btnOpenShop" type="button" title="магазин" class="px-2.5 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-amber-400/90 border border-white/5">
-                <span id="coinHeaderCount">0</span> монэток
+            <button id="btnOpenShop" type="button" title="магазин" class="px-2.5 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-cyan-400/90 border border-white/5">
+                💎 <span id="coinHeaderCount">50</span> кристаллов
             </button>
             <button id="btnToggleSound" type="button" title="звук" class="w-8 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition flex items-center justify-center text-slate-300 border border-white/5 text-xs">
                 <span id="soundIcon">🔊</span>
@@ -80,37 +80,41 @@
 
     <!-- Scoreboard & Boosters -->
     <div class="w-full max-w-md flex flex-col gap-1.5 shrink-0">
-        <div class="grid grid-cols-3 gap-1.5">
-            <div class="glass-panel rounded-xl px-2.5 py-1.5 flex flex-col justify-center">
-                <span class="text-[9px] uppercase tracking-wider font-semibold text-slate-500">счёт</span>
-                <span id="scoreDisplay" class="text-base sm:text-lg font-black text-slate-100 tabular-nums leading-tight">0</span>
+        <div class="grid grid-cols-4 gap-1">
+            <div class="glass-panel rounded-xl px-2 py-1.5 flex flex-col justify-center">
+                <span class="text-[8px] uppercase tracking-wider font-semibold text-slate-500">счёт</span>
+                <span id="scoreDisplay" class="text-sm sm:text-base font-black text-slate-100 tabular-nums leading-tight">0</span>
             </div>
 
-            <div class="glass-panel rounded-xl px-2.5 py-1.5 flex flex-col justify-center">
-                <span class="text-[9px] uppercase tracking-wider font-semibold text-amber-500/80">рекорд</span>
-                <span id="bestScoreDisplay" class="text-base sm:text-lg font-black text-amber-400/90 tabular-nums leading-tight">0</span>
+            <div class="glass-panel rounded-xl px-2 py-1.5 flex flex-col justify-center">
+                <span class="text-[8px] uppercase tracking-wider font-semibold text-amber-500/80">рекорд</span>
+                <span id="bestScoreDisplay" class="text-sm sm:text-base font-black text-amber-400/90 tabular-nums leading-tight">0</span>
             </div>
 
-            <div class="glass-panel rounded-xl px-2 py-1 flex items-center justify-between gap-1">
+            <div class="glass-panel rounded-xl px-1.5 py-1 flex items-center justify-around gap-1 col-span-2">
                 <button id="btnUseHammer" type="button" title="молоток" class="flex-1 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 active:scale-95 transition flex flex-col items-center justify-center py-0.5">
-                    <span class="text-xs leading-none">🔨</span>
-                    <span class="text-[9px] font-bold text-slate-400 mt-0.5">×<span id="hammerCount">3</span></span>
+                    <span class="text-[11px] leading-none">🔨</span>
+                    <span class="text-[8px] font-bold text-slate-400 mt-0.5">×<span id="hammerCount">2</span></span>
+                </button>
+                <button id="btnUseRocket" type="button" title="ракета" class="flex-1 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 active:scale-95 transition flex flex-col items-center justify-center py-0.5">
+                    <span class="text-[11px] leading-none">🚀</span>
+                    <span class="text-[8px] font-bold text-slate-400 mt-0.5">×<span id="rocketCount">1</span></span>
                 </button>
                 <button id="btnUseReroll" type="button" title="обновление" class="flex-1 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 active:scale-95 transition flex flex-col items-center justify-center py-0.5">
-                    <span class="text-xs leading-none">🔄</span>
-                    <span class="text-[9px] font-bold text-slate-400 mt-0.5">×<span id="rerollCount">3</span></span>
+                    <span class="text-[11px] leading-none">🔄</span>
+                    <span class="text-[8px] font-bold text-slate-400 mt-0.5">×<span id="rerollCount">2</span></span>
                 </button>
-                <button id="btnRestartGame" type="button" title="заново" class="w-7 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 active:scale-95 transition flex items-center justify-center text-slate-400 text-xs">
+                <button id="btnRestartGame" type="button" title="заново" class="w-6 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 active:scale-95 transition flex items-center justify-center text-slate-400 text-xs">
                     ↺
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Hammer Active Banner -->
-    <div id="hammerBanner" class="hidden w-full max-w-md px-3 py-1 rounded-xl bg-rose-950/80 text-rose-200 text-[11px] font-semibold flex items-center justify-between border border-rose-900/50 shadow-md shrink-0">
-        <span>🔨 нажмите на блок, чтобы уничтожить его</span>
-        <button id="btnCancelHammer" type="button" class="underline ml-2 text-[10px] font-bold">отмена</button>
+    <!-- Hammer / Rocket Active Banner -->
+    <div id="actionBanner" class="hidden w-full max-w-md px-3 py-1 rounded-xl bg-rose-950/80 text-rose-200 text-[11px] font-semibold flex items-center justify-between border border-rose-900/50 shadow-md shrink-0">
+        <span id="actionBannerText">🔨 выберите блок для удаления</span>
+        <button id="btnCancelAction" type="button" class="underline ml-2 text-[10px] font-bold">отмена</button>
     </div>
 
     <!-- Main Game Canvas Area -->
@@ -142,54 +146,62 @@
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <span class="text-lg">🛒</span>
-                    <h2 class="text-base font-extrabold text-slate-100">магазин улучшений</h2>
+                    <h2 class="text-base font-extrabold text-slate-100">магазин кристаллов</h2>
                 </div>
                 <button id="btnCloseShop" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-xs">✕</button>
             </div>
 
             <div class="flex items-center justify-between bg-slate-900/70 p-3 rounded-2xl border border-white/5 mb-3">
                 <span class="text-xs text-slate-400">ваш баланс:</span>
-                <span class="text-sm font-black text-amber-400 flex items-center gap-1"><span id="shopCoinBalance">0</span> монэток</span>
+                <span class="text-sm font-black text-cyan-400 flex items-center gap-1">💎 <span id="shopCoinBalance">50</span> кристаллов</span>
             </div>
 
             <button id="btnHuevoDonate" type="button" class="w-full mb-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-extrabold text-xs transition shadow-md flex items-center justify-center gap-1.5">
-                <span>⭐ пополнить монетки через huEVO</span>
+                <span>⭐ купить кристаллы через huEVO</span>
             </button>
 
             <div class="space-y-2 mb-3 text-xs">
-                <div class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-900/60 border border-white/5">
+                <div class="flex items-center justify-between p-2 rounded-2xl bg-slate-900/60 border border-white/5">
                     <div>
                         <div class="font-bold text-slate-200">🔨 молоток (×1)</div>
-                        <div class="text-[10px] text-slate-500">удалить блок</div>
+                        <div class="text-[10px] text-slate-500">удалить один блок</div>
                     </div>
-                    <button id="btnBuyHammer" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold border border-amber-500/20 active:scale-95 transition">
-                        150 монэток
+                    <button id="btnBuyHammer" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold border border-cyan-500/20 active:scale-95 transition">
+                        150 кр.
                     </button>
                 </div>
 
-                <div class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-900/60 border border-white/5">
+                <div class="flex items-center justify-between p-2 rounded-2xl bg-slate-900/60 border border-white/5">
+                    <div>
+                        <div class="font-bold text-slate-200">🚀 ракета (×1)</div>
+                        <div class="text-[10px] text-slate-500">очистить линию</div>
+                    </div>
+                    <button id="btnBuyRocket" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold border border-cyan-500/20 active:scale-95 transition">
+                        200 кр.
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between p-2 rounded-2xl bg-slate-900/60 border border-white/5">
                     <div>
                         <div class="font-bold text-slate-200">🔄 обновление (×1)</div>
-                        <div class="text-[10px] text-slate-500">новые фигуры</div>
+                        <div class="text-[10px] text-slate-500">новые фигуры в лотке</div>
                     </div>
-                    <button id="btnBuyReroll" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold border border-amber-500/20 active:scale-95 transition">
-                        100 монэток
+                    <button id="btnBuyReroll" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold border border-cyan-500/20 active:scale-95 transition">
+                        100 кр.
                     </button>
                 </div>
             </div>
-
-            <p class="text-[10px] text-slate-500 text-center">монетки можно заработать в игре или внести через донат huEVO.</p>
         </div>
     </div>
 
-    <!-- Game Over Modal -->
+    <!-- Game Over Modal (с кнопкой Новая жизнь) -->
     <div id="modalGameOver" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="w-full max-w-sm glass-panel rounded-3xl p-5 text-center border border-white/10 shadow-2xl animate-pop">
             <div class="w-14 h-14 mx-auto mb-2 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl border border-white/5 shadow-inner">
                 🏁
             </div>
             <h2 class="text-xl font-black text-slate-100 mb-0.5">ходы закончились</h2>
-            <p class="text-xs text-slate-400 mb-4">партия завершена. отличный результат!</p>
+            <p class="text-xs text-slate-400 mb-4">купи продолжение игры или начни заново!</p>
 
             <div class="grid grid-cols-2 gap-2.5 mb-4">
                 <div class="bg-slate-900/80 rounded-2xl p-2.5 border border-white/5">
@@ -197,17 +209,18 @@
                     <div id="finalScoreText" class="text-xl font-black text-slate-100 mt-0.5">0</div>
                 </div>
                 <div class="bg-slate-900/80 rounded-2xl p-2.5 border border-white/5">
-                    <div class="text-[10px] text-amber-500/80 uppercase font-bold">монэток получено</div>
-                    <div id="finalCoinsEarned" class="text-xl font-black text-amber-400 mt-0.5">+0</div>
+                    <div class="text-[10px] text-cyan-500/80 uppercase font-bold">кристаллы</div>
+                    <div id="finalCoinsEarned" class="text-xl font-black text-cyan-400 mt-0.5">+0</div>
                 </div>
             </div>
 
             <div class="flex flex-col gap-2">
-                <button id="btnPlayAgainModal" type="button" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-98 transition font-bold text-slate-100 text-xs border border-white/10 shadow">
-                    играть ещё раз
+                <!-- Кнопка Новая жизнь -->
+                <button id="btnReviveGame" type="button" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 active:scale-98 transition font-black text-white text-xs shadow-lg shadow-cyan-600/30 flex items-center justify-center gap-1.5">
+                    <span>💖 новая жизнь (купить за 300 кристаллов)</span>
                 </button>
-                <button id="btnShareScoreModal" type="button" class="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-98 transition font-semibold text-slate-400 text-[11px] border border-white/5">
-                    скопировать результат
+                <button id="btnPlayAgainModal" type="button" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-98 transition font-bold text-slate-100 text-xs border border-white/10 shadow">
+                    начать заново
                 </button>
             </div>
         </div>
@@ -239,7 +252,7 @@
                 <button id="btnClosePublish" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold">✕</button>
             </div>
             <p class="text-slate-400 leading-relaxed mb-3">
-                загрузите этот файл <code class="text-slate-200 bg-slate-900 px-1 py-0.5 rounded">index.html</code> на github pages или netlify drop, после чего вставьте полученную ссылку в панель управления разработчика huevo.
+                загрузите этот файл <code class="text-slate-200 bg-slate-900 px-1 py-0.5 rounded">index.html</code> на github pages, после чего вставьте ссылку в панель управления huEVO.
             </p>
             <button id="btnGotItPublish" class="w-full py-2 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition">понятно</button>
         </div>
@@ -253,7 +266,7 @@
                 <button id="btnCloseRules" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold">✕</button>
             </div>
             <p class="text-slate-400 leading-relaxed mb-3">
-                размещайте фигуры на сетке 8×8. линии исчезают с плавной анимацией взрыва, принося очки и монэтки. используйте молоток и обновление, если зашли в тупик!
+                размещайте фигуры на сетке 8×8. копите кристаллы, используйте ракету и молоток, а если проиграли — купите новую жизнь за кристаллы!
             </p>
             <button id="btnCloseRulesBottom" class="w-full py-2 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition">закрыть</button>
         </div>
@@ -328,7 +341,7 @@
                 [[1, 1, 1], [1, 0, 0], [1, 0, 0]], [[1, 1, 1], [0, 1, 0]]
             ];
 
-            let hammerActive = false;
+            let activeTool = null; // 'hammer' или 'rocket'
             let playerName = Storage.get('huevo_player_name', 'игрок');
             let particles = [];
             let clearingAnims = [];
@@ -338,9 +351,10 @@
                 tray: [null, null, null],
                 score: 0,
                 best: Storage.get('huevo_blast_best', 0),
-                coins: Storage.get('huevo_blast_coins', 50),
+                coins: Storage.get('huevo_blast_coins', 50), // кристаллы
                 streak: 0,
                 hammers: 2,
+                rockets: 1,
                 rerolls: 2,
                 draggingIdx: -1,
                 dragX: 0,
@@ -357,11 +371,13 @@
             const scoreDisplay = document.getElementById('scoreDisplay');
             const bestScoreDisplay = document.getElementById('bestScoreDisplay');
             const hammerCountEl = document.getElementById('hammerCount');
+            const rocketCountEl = document.getElementById('rocketCount');
             const rerollCountEl = document.getElementById('rerollCount');
             const coinHeaderCount = document.getElementById('coinHeaderCount');
             const shopCoinBalance = document.getElementById('shopCoinBalance');
             const streakValueEl = document.getElementById('streakValue');
-            const hammerBanner = document.getElementById('hammerBanner');
+            const actionBanner = document.getElementById('actionBanner');
+            const actionBannerText = document.getElementById('actionBannerText');
             const comboFloatingBadge = document.getElementById('comboFloatingBadge');
 
             let metrics = { w: 360, h: 360, dpr: 1, boardX: 0, boardY: 0, boardSize: 0, cellSize: 0, trayY: 0, trayH: 0 };
@@ -372,7 +388,7 @@
                 blastState.streak = 0;
                 blastState.draggingIdx = -1;
                 blastState.isGameOver = false;
-                hammerActive = false;
+                activeTool = null;
                 clearingAnims = [];
                 particles = [];
                 spawnBlastTray();
@@ -525,7 +541,6 @@
                 return true;
             }
 
-            // Стабильный и быстрый вывод таблицы лидеров
             function requestLeaderboardFromHuevo() {
                 const userBest = Math.max(blastState.best, blastState.score);
                 const rivals = [
@@ -544,14 +559,13 @@
                 `).join('');
             }
 
-            // Слушаем донаты от huEVO
             window.addEventListener('message', (event) => {
                 if (event.data && event.data.type === 'HUEVO_DONATE_SUCCESS') {
                     const addedCoins = event.data.coins || 500;
                     blastState.coins += addedCoins;
                     Storage.set('huevo_blast_coins', blastState.coins);
                     updateUI();
-                    showToast(`успешно! получено +${addedCoins} монэток`);
+                    showToast(`успешно! получено +${addedCoins} кристаллов`);
                 }
             });
 
@@ -747,16 +761,37 @@
                 SoundFX.init();
                 const pos = getCanvasPos(evt);
 
-                if (hammerActive) {
+                // Использование молотка
+                if (activeTool === 'hammer') {
                     const c = Math.floor((pos.x - metrics.boardX) / metrics.cellSize);
                     const r = Math.floor((pos.y - metrics.boardY) / metrics.cellSize);
                     if (r >= 0 && r < 8 && c >= 0 && c < 8 && blastState.grid[r][c] !== null) {
                         blastState.grid[r][c] = null;
                         blastState.hammers--;
-                        hammerActive = false;
+                        activeTool = null;
                         SoundFX.smash();
                         updateUI();
                         showToast('блок уничтожен!');
+                    }
+                    return;
+                }
+
+                // Использование ракеты (очищает случайный заполненный ряд или колонку)
+                if (activeTool === 'rocket') {
+                    const filledRows = [];
+                    for (let r = 0; r < 8; r++) {
+                        if (blastState.grid[r].some(cell => cell !== null)) filledRows.push(r);
+                    }
+                    if (filledRows.length > 0) {
+                        const targetR = filledRows[Math.floor(Math.random() * filledRows.length)];
+                        for (let c = 0; c < 8; c++) blastState.grid[targetR][c] = null;
+                        blastState.rockets--;
+                        activeTool = null;
+                        SoundFX.clear();
+                        updateUI();
+                        showToast('ракета очистила линию!');
+                    } else {
+                        showToast('поле пустое для ракеты!');
                     }
                     return;
                 }
@@ -805,7 +840,7 @@
             }
 
             function handlePointerUp() {
-                if (hammerActive || blastState.draggingIdx === -1) return;
+                if (activeTool || blastState.draggingIdx === -1) return;
                 if (blastState.hoverR !== -1 && blastState.hoverC !== -1) {
                     placeBlastPiece(blastState.draggingIdx, blastState.hoverR, blastState.hoverC);
                 }
@@ -825,11 +860,18 @@
                 scoreDisplay.textContent = blastState.score.toLocaleString('ru-RU');
                 bestScoreDisplay.textContent = blastState.best.toLocaleString('ru-RU');
                 hammerCountEl.textContent = blastState.hammers;
+                rocketCountEl.textContent = blastState.rockets;
                 rerollCountEl.textContent = blastState.rerolls;
                 coinHeaderCount.textContent = blastState.coins;
                 shopCoinBalance.textContent = blastState.coins;
                 streakValueEl.textContent = blastState.streak;
-                hammerBanner.classList.toggle('hidden', !hammerActive);
+
+                if (activeTool) {
+                    actionBanner.classList.remove('hidden');
+                    actionBannerText.textContent = activeTool === 'hammer' ? '🔨 выберите блок для удаления' : '🚀 нажмите на поле для запуска ракеты';
+                } else {
+                    actionBanner.classList.add('hidden');
+                }
             }
 
             document.getElementById('btnToggleSound').addEventListener('click', () => {
@@ -839,11 +881,17 @@
 
             document.getElementById('btnUseHammer').addEventListener('click', () => {
                 if (blastState.hammers <= 0) { showToast('купите молоток в магазине!'); return; }
-                hammerActive = !hammerActive;
+                activeTool = activeTool === 'hammer' ? null : 'hammer';
                 updateUI();
             });
 
-            document.getElementById('btnCancelHammer').addEventListener('click', () => { hammerActive = false; updateUI(); });
+            document.getElementById('btnUseRocket').addEventListener('click', () => {
+                if (blastState.rockets <= 0) { showToast('купите ракету в магазине!'); return; }
+                activeTool = activeTool === 'rocket' ? null : 'rocket';
+                updateUI();
+            });
+
+            document.getElementById('btnCancelAction').addEventListener('click', () => { activeTool = null; updateUI(); });
 
             document.getElementById('btnUseReroll').addEventListener('click', () => {
                 if (blastState.rerolls <= 0) { showToast('купите обновление в магазине!'); return; }
@@ -855,15 +903,37 @@
 
             document.getElementById('btnRestartGame').addEventListener('click', () => { initBlastGame(); showToast('новая игра'); });
 
+            // Покупка новой жизни при проигрыше
+            document.getElementById('btnReviveGame').addEventListener('click', () => {
+                if (blastState.coins >= 300) {
+                    blastState.coins -= 300;
+                    Storage.set('huevo_blast_coins', blastState.coins);
+                    
+                    // Очищаем случайную половину поля, чтобы освободить место
+                    for (let r = 0; r < 8; r++) {
+                        for (let c = 0; c < 8; c++) {
+                            if (Math.random() > 0.4) blastState.grid[r][c] = null;
+                        }
+                    }
+                    spawnBlastTray();
+                    blastState.isGameOver = false;
+                    document.getElementById('modalGameOver').classList.add('hidden');
+                    updateUI();
+                    showToast('новая жизнь активирована!');
+                } else {
+                    showToast('нужно 300 кристаллов для возрождения!');
+                }
+            });
+
             document.getElementById('btnHuevoDonate').addEventListener('click', () => {
                 if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500 }, '*');
+                    window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500, item: 'crystals_pack' }, '*');
                     showToast('переход к оплате huEVO...');
                 } else {
                     blastState.coins += 500;
                     Storage.set('huevo_blast_coins', blastState.coins);
                     updateUI();
-                    showToast('успешно добавлено +500 монэток (тест доната)!');
+                    showToast('успешно: +500 кристаллов (тест доната)!');
                 }
             });
 
@@ -877,7 +947,17 @@
                     Storage.set('huevo_blast_coins', blastState.coins);
                     updateUI();
                     showToast('молоток куплен!');
-                } else { showToast('недостаточно монэток!'); }
+                } else { showToast('недостаточно кристаллов!'); }
+            });
+
+            document.getElementById('btnBuyRocket').addEventListener('click', () => {
+                if (blastState.coins >= 200) {
+                    blastState.coins -= 200;
+                    blastState.rockets++;
+                    Storage.set('huevo_blast_coins', blastState.coins);
+                    updateUI();
+                    showToast('ракета куплена!');
+                } else { showToast('недостаточно кристаллов!'); }
             });
 
             document.getElementById('btnBuyReroll').addEventListener('click', () => {
@@ -887,7 +967,7 @@
                     Storage.set('huevo_blast_coins', blastState.coins);
                     updateUI();
                     showToast('обновление куплено!');
-                } else { showToast('недостаточно монэток!'); }
+                } else { showToast('недостаточно кристаллов!'); }
             });
 
             function openGameOverModal() {
