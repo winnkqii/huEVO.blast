@@ -3,1015 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>huEVO.blast — игра для кайфа</title>
+    <title>huEVO.blast</title>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at 50% 0%, #161822 0%, #0a0b10 100%);
+            font-family: 'Inter', sans-serif;
+            background: #0a0b10;
             color: #d1d5db;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             overflow: hidden;
-            touch-action: manipulation;
-            height: 100vh;
-            height: 100dvh;
+            height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; align-items: center; justify-between;
         }
-        .glass-panel {
-            background: rgba(22, 25, 35, 0.82);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.4); opacity: 0; }
-            70% { transform: scale(1.08); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop {
-            animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .glass { background: rgba(22, 25, 35, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06); }
     </style>
 </head>
-<body class="h-full flex flex-col items-center justify-between p-2 sm:p-3 overflow-hidden">
+<body class="h-full flex flex-col items-center justify-between p-3">
 
-    <!-- Top Header -->
-    <header class="w-full max-w-md glass-panel rounded-2xl px-3 py-2 flex items-center justify-between shadow-md shrink-0">
-        <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center font-black text-slate-200 text-sm border border-white/10 shadow-inner">
-                🧩
-            </div>
-            <div>
-                <div class="flex items-center gap-1.5">
-                    <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-slate-100 leading-none">huEVO.blast</h1>
-                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">8×8</span>
-                </div>
-            </div>
+    <!-- Шапка -->
+    <header class="w-full max-w-md glass rounded-2xl px-3 py-2 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">🧩</span>
+            <h1 class="font-black text-sm text-slate-100">huEVO.blast</h1>
         </div>
-
-        <div class="flex items-center gap-1.5">
-            <button id="btnOpenShop" type="button" title="магазин" class="px-2.5 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-cyan-400/90 border border-white/5">
-                💎 <span id="coinHeaderCount">50</span> кристаллов
+        <div class="flex items-center gap-2">
+            <button id="btnOpenShop" class="px-2.5 py-1 rounded-xl bg-slate-800 text-xs font-bold text-cyan-400 border border-white/5">
+                💎 <span id="coinCount">50</span>
             </button>
-            <button id="btnToggleSound" type="button" title="звук" class="w-8 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition flex items-center justify-center text-slate-300 border border-white/5 text-xs">
-                <span id="soundIcon">🔊</span>
-            </button>
-            <button id="btnOpenLeaderboard" type="button" title="лидеры" class="w-8 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 transition flex items-center justify-center text-slate-300 border border-white/5 text-xs">
-                🏆
-            </button>
-            <button id="btnOpenPublish" type="button" title="на сайт" class="w-8 h-8 rounded-xl bg-slate-700 hover:bg-slate-600 active:scale-95 transition flex items-center justify-center text-slate-200 border border-white/5 text-xs">
-                🚀
-            </button>
+            <button id="btnLeaderboard" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-xs">🏆</button>
         </div>
     </header>
 
-    <!-- Scoreboard & Boosters -->
-    <div class="w-full max-w-md flex flex-col gap-1.5 shrink-0">
-        <div class="grid grid-cols-4 gap-1">
-            <div class="glass-panel rounded-xl px-2 py-1.5 flex flex-col justify-center">
-                <span class="text-[8px] uppercase tracking-wider font-semibold text-slate-500">счёт</span>
-                <span id="scoreDisplay" class="text-sm sm:text-base font-black text-slate-100 tabular-nums leading-tight">0</span>
-            </div>
-
-            <div class="glass-panel rounded-xl px-2 py-1.5 flex flex-col justify-center">
-                <span class="text-[8px] uppercase tracking-wider font-semibold text-amber-500/80">рекорд</span>
-                <span id="bestScoreDisplay" class="text-sm sm:text-base font-black text-amber-400/90 tabular-nums leading-tight">0</span>
-            </div>
-
-            <div class="glass-panel rounded-xl px-1.5 py-1 flex items-center justify-around gap-1 col-span-2">
-                <button id="btnUseHammer" type="button" title="молоток" class="flex-1 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 active:scale-95 transition flex flex-col items-center justify-center py-0.5">
-                    <span class="text-[11px] leading-none">🔨</span>
-                    <span class="text-[8px] font-bold text-slate-400 mt-0.5">×<span id="hammerCount">2</span></span>
-                </button>
-                <button id="btnUseRocket" type="button" title="ракета" class="flex-1 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 active:scale-95 transition flex flex-col items-center justify-center py-0.5">
-                    <span class="text-[11px] leading-none">🚀</span>
-                    <span class="text-[8px] font-bold text-slate-400 mt-0.5">×<span id="rocketCount">1</span></span>
-                </button>
-                <button id="btnUseReroll" type="button" title="обновление" class="flex-1 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 active:scale-95 transition flex flex-col items-center justify-center py-0.5">
-                    <span class="text-[11px] leading-none">🔄</span>
-                    <span class="text-[8px] font-bold text-slate-400 mt-0.5">×<span id="rerollCount">2</span></span>
-                </button>
-                <button id="btnRestartGame" type="button" title="заново" class="w-6 h-full rounded-lg bg-slate-800/60 hover:bg-slate-800 active:scale-95 transition flex items-center justify-center text-slate-400 text-xs">
-                    ↺
-                </button>
-            </div>
+    <!-- Счет и бустеры -->
+    <div class="w-full max-w-md grid grid-cols-3 gap-2">
+        <div class="glass rounded-xl p-2 flex flex-col justify-center">
+            <span class="text-[9px] text-slate-500 uppercase font-bold">счёт</span>
+            <span id="scoreVal" class="text-lg font-black text-white">0</span>
+        </div>
+        <div class="glass rounded-xl p-2 flex flex-col justify-center">
+            <span class="text-[9px] text-amber-500 uppercase font-bold">рекорд</span>
+            <span id="bestVal" class="text-lg font-black text-amber-400">0</span>
+        </div>
+        <div class="glass rounded-xl p-1 flex items-center justify-around">
+            <button id="btnHammer" class="text-base p-1">🔨<span id="hCount" class="text-[10px] text-slate-400">2</span></button>
+            <button id="btnReroll" class="text-base p-1">🔄<span id="rCount" class="text-[10px] text-slate-400">2</span></button>
+            <button id="btnRestart" class="text-sm p-1 text-slate-400">↺</button>
         </div>
     </div>
 
-    <!-- Hammer / Rocket Active Banner -->
-    <div id="actionBanner" class="hidden w-full max-w-md px-3 py-1 rounded-xl bg-rose-950/80 text-rose-200 text-[11px] font-semibold flex items-center justify-between border border-rose-900/50 shadow-md shrink-0">
-        <span id="actionBannerText">🔨 выберите блок для удаления</span>
-        <button id="btnCancelAction" type="button" class="underline ml-2 text-[10px] font-bold">отмена</button>
-    </div>
-
-    <!-- Main Game Canvas Area -->
-    <main class="relative w-full max-w-md flex-1 flex flex-col items-center justify-center min-h-0 my-1">
-        <!-- Floating Combo Badge -->
-        <div id="comboFloatingBadge" class="pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2 mb-1 px-3 py-0.5 rounded-full bg-slate-800 text-slate-200 font-bold text-[11px] border border-slate-700 shadow-lg">
-            комбо ×2!
-        </div>
-
-        <!-- Canvas Wrapper -->
-        <div id="canvasContainer" class="w-full aspect-square max-h-[58vh] sm:max-h-[62vh] glass-panel rounded-2xl p-2 flex flex-col items-center justify-center relative shadow-xl overflow-hidden">
-            <canvas id="gameCanvas" class="w-full h-full rounded-xl cursor-pointer touch-none"></canvas>
-        </div>
-
-        <!-- Bottom Helper Bar -->
-        <div class="w-full mt-1.5 flex items-center justify-between text-[11px] text-slate-500 px-1 shrink-0">
-            <span id="streakIndicator" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/60 text-slate-400 border border-white/5">
-                🔥 серия: <strong id="streakValue" class="text-slate-300">0</strong>
-            </span>
-            <button id="btnOpenRules" type="button" class="hover:text-slate-300 transition underline">
-                правила
-            </button>
+    <!-- Игровое поле (Canvas) -->
+    <main class="relative w-full max-w-md flex-1 flex flex-col items-center justify-center my-2">
+        <div id="canvasBox" class="w-full aspect-square max-h-[60vh] glass rounded-2xl p-2 flex items-center justify-center shadow-xl overflow-hidden">
+            <canvas id="gameCanvas" class="w-full h-full rounded-xl touch-none"></canvas>
         </div>
     </main>
 
-    <!-- Shop Modal -->
-    <div id="modalShop" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-sm glass-panel rounded-3xl p-5 border border-white/10 shadow-2xl animate-pop">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg">🛒</span>
-                    <h2 class="text-base font-extrabold text-slate-100">магазин кристаллов</h2>
-                </div>
-                <button id="btnCloseShop" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-xs">✕</button>
-            </div>
-
-            <div class="flex items-center justify-between bg-slate-900/70 p-3 rounded-2xl border border-white/5 mb-3">
-                <span class="text-xs text-slate-400">ваш баланс:</span>
-                <span class="text-sm font-black text-cyan-400 flex items-center gap-1">💎 <span id="shopCoinBalance">50</span> кристаллов</span>
-            </div>
-
-            <button id="btnHuevoDonate" type="button" class="w-full mb-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-extrabold text-xs transition shadow-md flex items-center justify-center gap-1.5">
-                <span>⭐ купить кристаллы через huEVO</span>
-            </button>
-
-            <div class="space-y-2 mb-3 text-xs">
-                <div class="flex items-center justify-between p-2 rounded-2xl bg-slate-900/60 border border-white/5">
-                    <div>
-                        <div class="font-bold text-slate-200">🔨 молоток (×1)</div>
-                        <div class="text-[10px] text-slate-500">удалить один блок</div>
-                    </div>
-                    <button id="btnBuyHammer" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold border border-cyan-500/20 active:scale-95 transition">
-                        150 кр.
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between p-2 rounded-2xl bg-slate-900/60 border border-white/5">
-                    <div>
-                        <div class="font-bold text-slate-200">🚀 ракета (×1)</div>
-                        <div class="text-[10px] text-slate-500">очистить линию</div>
-                    </div>
-                    <button id="btnBuyRocket" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold border border-cyan-500/20 active:scale-95 transition">
-                        200 кр.
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between p-2 rounded-2xl bg-slate-900/60 border border-white/5">
-                    <div>
-                        <div class="font-bold text-slate-200">🔄 обновление (×1)</div>
-                        <div class="text-[10px] text-slate-500">новые фигуры в лотке</div>
-                    </div>
-                    <button id="btnBuyReroll" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold border border-cyan-500/20 active:scale-95 transition">
-                        100 кр.
-                    </button>
-                </div>
-            </div>
+    <!-- Модалка магазина -->
+    <div id="shopModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="w-full max-w-sm glass rounded-3xl p-5 text-center">
+            <h2 class="text-base font-extrabold text-white mb-3">магазин кристаллов</h2>
+            <p class="text-xs text-slate-400 mb-4">ваш баланс: <span id="shopCoins" class="text-cyan-400 font-bold">50</span> кристаллов</p>
+            <button id="btnDonate" class="w-full py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs mb-3">⭐ купить через huEVO</button>
+            <button id="btnCloseShop" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">закрыть</button>
         </div>
-    </div>
-
-    <!-- Game Over Modal (с кнопкой Новая жизнь) -->
-    <div id="modalGameOver" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-sm glass-panel rounded-3xl p-5 text-center border border-white/10 shadow-2xl animate-pop">
-            <div class="w-14 h-14 mx-auto mb-2 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl border border-white/5 shadow-inner">
-                🏁
-            </div>
-            <h2 class="text-xl font-black text-slate-100 mb-0.5">ходы закончились</h2>
-            <p class="text-xs text-slate-400 mb-4">купи продолжение игры или начни заново!</p>
-
-            <div class="grid grid-cols-2 gap-2.5 mb-4">
-                <div class="bg-slate-900/80 rounded-2xl p-2.5 border border-white/5">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold">счёт</div>
-                    <div id="finalScoreText" class="text-xl font-black text-slate-100 mt-0.5">0</div>
-                </div>
-                <div class="bg-slate-900/80 rounded-2xl p-2.5 border border-white/5">
-                    <div class="text-[10px] text-cyan-500/80 uppercase font-bold">кристаллы</div>
-                    <div id="finalCoinsEarned" class="text-xl font-black text-cyan-400 mt-0.5">+0</div>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-2">
-                <!-- Кнопка Новая жизнь -->
-                <button id="btnReviveGame" type="button" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 active:scale-98 transition font-black text-white text-xs shadow-lg shadow-cyan-600/30 flex items-center justify-center gap-1.5">
-                    <span>💖 новая жизнь (купить за 300 кристаллов)</span>
-                </button>
-                <button id="btnPlayAgainModal" type="button" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-98 transition font-bold text-slate-100 text-xs border border-white/10 shadow">
-                    начать заново
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Leaderboard Modal -->
-    <div id="modalLeaderboard" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-panel rounded-3xl p-4 border border-white/10 shadow-2xl animate-pop">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-base">🏆</span>
-                    <h2 class="text-sm font-extrabold text-slate-100">таблица лидеров huevo</h2>
-                </div>
-                <button id="btnCloseLeaderboard" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-xs">✕</button>
-            </div>
-            <div id="leaderboardList" class="space-y-1.5 mb-3 max-h-60 overflow-y-auto no-scrollbar text-xs"></div>
-            <div class="bg-slate-900/70 rounded-xl p-2.5 border border-white/5 flex items-center gap-2">
-                <input id="playerNameInput" type="text" maxlength="18" placeholder="ваше имя" class="flex-1 bg-slate-800 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/5 focus:outline-none focus:border-slate-600">
-                <button id="btnSavePlayerName" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">ок</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Publish / Info Modal -->
-    <div id="modalPublish" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-panel rounded-3xl p-4 border border-white/10 shadow-2xl animate-pop max-h-[85vh] overflow-y-auto no-scrollbar text-xs">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="font-extrabold text-slate-100">🚀 размещение на huevo</h2>
-                <button id="btnClosePublish" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold">✕</button>
-            </div>
-            <p class="text-slate-400 leading-relaxed mb-3">
-                загрузите этот файл <code class="text-slate-200 bg-slate-900 px-1 py-0.5 rounded">index.html</code> на github pages, после чего вставьте ссылку в панель управления huEVO.
-            </p>
-            <button id="btnGotItPublish" class="w-full py-2 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition">понятно</button>
-        </div>
-    </div>
-
-    <!-- Rules Modal -->
-    <div id="modalRules" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-panel rounded-3xl p-4 border border-white/10 shadow-2xl animate-pop text-xs">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="font-extrabold text-slate-100">📖 правила</h2>
-                <button id="btnCloseRules" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold">✕</button>
-            </div>
-            <p class="text-slate-400 leading-relaxed mb-3">
-                размещайте фигуры на сетке 8×8. копите кристаллы, используйте ракету и молоток, а если проиграли — купите новую жизнь за кристаллы!
-            </p>
-            <button id="btnCloseRulesBottom" class="w-full py-2 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition">закрыть</button>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toastNotification" class="pointer-events-none fixed bottom-4 left-1/2 -translate-x-1/2 z-50 opacity-0 transition-all duration-300 px-3 py-1.5 rounded-xl bg-slate-900/95 border border-white/10 text-slate-200 text-xs font-semibold shadow-xl">
-        уведомление
     </div>
 
     <script>
-        (function() {
-            const Storage = {
-                get(key, fallback) {
-                    try {
-                        const val = localStorage.getItem(key);
-                        return val !== null ? JSON.parse(val) : fallback;
-                    } catch (e) { return fallback; }
-                },
-                set(key, value) {
-                    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
-                }
-            };
+        // Простой и надежный движок игры
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const box = document.getElementById('canvasBox');
 
-            const SoundFX = {
-                ctx: null,
-                enabled: true,
-                init() {
-                    if (!this.ctx) {
-                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                        if (AudioCtx) this.ctx = new AudioCtx();
-                    }
-                    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-                },
-                playTone(freq, type, duration, vol = 0.08) {
-                    if (!this.enabled) return;
-                    try {
-                        this.init();
-                        if (!this.ctx) return;
-                        const now = this.ctx.currentTime;
-                        const osc = this.ctx.createOscillator();
-                        const gain = this.ctx.createGain();
-                        osc.type = type;
-                        osc.frequency.setValueAtTime(freq, now);
-                        gain.gain.setValueAtTime(vol, now);
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        osc.start(now);
-                        osc.stop(now + duration);
-                    } catch (e) {}
-                },
-                pick() { this.playTone(280, 'sine', 0.05, 0.06); },
-                place() { this.playTone(180, 'triangle', 0.08, 0.08); },
-                clear() { this.playTone(420, 'triangle', 0.15, 0.1); },
-                smash() { this.playTone(120, 'sawtooth', 0.15, 0.1); },
-                gameOver() { this.playTone(200, 'sawtooth', 0.2, 0.1); }
-            };
+        let score = 0, best = localStorage.getItem('h_best') || 0;
+        let coins = Number(localStorage.getItem('h_coins')) || 50;
+        let grid = Array.from({length: 8}, () => Array(8).fill(null));
+        let cellSize = 40, boardX = 0, boardY = 0;
 
-            const BLAST_PALETTE = [
-                { fill: '#78869c', light: '#a4b2c6', dark: '#525e71' },
-                { fill: '#9c7cb5', light: '#cbb3de', dark: '#75588f' },
-                { fill: '#4a9c90', light: '#86d4c8', dark: '#317369' },
-                { fill: '#c99351', light: '#ebd0ab', dark: '#9e6d30' },
-                { fill: '#b86b87', light: '#e8acc1', dark: '#8f4b64' },
-                { fill: '#5b8ca8', light: '#9ecde7', dark: '#3e657e' }
-            ];
+        document.getElementById('bestVal').textContent = best;
+        document.getElementById('coinCount').textContent = coins;
 
-            const BLAST_SHAPES = [
-                [[1]], [[1, 1]], [[1], [1]], [[1, 1, 1]], [[1], [1], [1]],
-                [[1, 1], [1, 1]], [[1, 1, 1], [1, 1, 1]], [[1, 0], [1, 1]],
-                [[1, 1, 1], [1, 0, 0], [1, 0, 0]], [[1, 1, 1], [0, 1, 0]]
-            ];
+        function resize() {
+            const size = Math.min(box.clientWidth - 16, box.clientHeight - 16);
+            canvas.width = size; canvas.height = size;
+            cellSize = size / 8;
+            render();
+        }
 
-            let activeTool = null; // 'hammer' или 'rocket'
-            let playerName = Storage.get('huevo_player_name', 'игрок');
-            let particles = [];
-            let clearingAnims = [];
-
-            const blastState = {
-                grid: Array.from({ length: 8 }, () => Array(8).fill(null)),
-                tray: [null, null, null],
-                score: 0,
-                best: Storage.get('huevo_blast_best', 0),
-                coins: Storage.get('huevo_blast_coins', 50), // кристаллы
-                streak: 0,
-                hammers: 2,
-                rockets: 1,
-                rerolls: 2,
-                draggingIdx: -1,
-                dragX: 0,
-                dragY: 0,
-                hoverR: -1,
-                hoverC: -1,
-                isGameOver: false
-            };
-
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            const canvasContainer = document.getElementById('canvasContainer');
-
-            const scoreDisplay = document.getElementById('scoreDisplay');
-            const bestScoreDisplay = document.getElementById('bestScoreDisplay');
-            const hammerCountEl = document.getElementById('hammerCount');
-            const rocketCountEl = document.getElementById('rocketCount');
-            const rerollCountEl = document.getElementById('rerollCount');
-            const coinHeaderCount = document.getElementById('coinHeaderCount');
-            const shopCoinBalance = document.getElementById('shopCoinBalance');
-            const streakValueEl = document.getElementById('streakValue');
-            const actionBanner = document.getElementById('actionBanner');
-            const actionBannerText = document.getElementById('actionBannerText');
-            const comboFloatingBadge = document.getElementById('comboFloatingBadge');
-
-            let metrics = { w: 360, h: 360, dpr: 1, boardX: 0, boardY: 0, boardSize: 0, cellSize: 0, trayY: 0, trayH: 0 };
-
-            function initBlastGame() {
-                blastState.grid = Array.from({ length: 8 }, () => Array(8).fill(null));
-                blastState.score = 0;
-                blastState.streak = 0;
-                blastState.draggingIdx = -1;
-                blastState.isGameOver = false;
-                activeTool = null;
-                clearingAnims = [];
-                particles = [];
-                spawnBlastTray();
-                updateUI();
-            }
-
-            function spawnBlastTray() {
-                for (let i = 0; i < 3; i++) {
-                    const shape = BLAST_SHAPES[Math.floor(Math.random() * BLAST_SHAPES.length)];
-                    const color = BLAST_PALETTE[Math.floor(Math.random() * BLAST_PALETTE.length)];
-                    blastState.tray[i] = { shape, color, scale: 0.2 };
-                }
-            }
-
-            function resizeCanvas() {
-                const rect = canvasContainer.getBoundingClientRect();
-                const size = Math.min(Math.max(220, rect.width - 16), Math.max(220, rect.height - 16));
-
-                metrics.dpr = window.devicePixelRatio || 1;
-                metrics.w = size;
-                metrics.h = size;
-
-                canvas.style.width = size + 'px';
-                canvas.style.height = size + 'px';
-                canvas.width = Math.floor(size * metrics.dpr);
-                canvas.height = Math.floor(size * metrics.dpr);
-
-                ctx.setTransform(metrics.dpr, 0, 0, metrics.dpr, 0, 0);
-
-                const boardMax = size * 0.72;
-                metrics.cellSize = Math.floor(boardMax / 8);
-                metrics.boardSize = metrics.cellSize * 8;
-                metrics.boardX = Math.floor((size - metrics.boardSize) / 2);
-                metrics.boardY = Math.floor(size * 0.02);
-                metrics.trayY = metrics.boardY + metrics.boardSize + Math.floor(size * 0.03);
-                metrics.trayH = size - metrics.trayY - Math.floor(size * 0.01);
-            }
-
-            function canPlaceBlastShape(shape, startR, startC) {
-                for (let r = 0; r < shape.length; r++) {
-                    for (let c = 0; c < shape[r].length; c++) {
-                        if (shape[r][c]) {
-                            const gr = startR + r, gc = startC + c;
-                            if (gr < 0 || gr >= 8 || gc < 0 || gc >= 8) return false;
-                            if (blastState.grid[gr][gc] !== null) return false;
-                        }
-                    }
-                }
-                return true;
-            }
-
-            function canAnyTrayPieceFit() {
-                for (let i = 0; i < 3; i++) {
-                    const item = blastState.tray[i];
-                    if (!item) continue;
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            if (canPlaceBlastShape(item.shape, r, c)) return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            function placeBlastPiece(trayIdx, startR, startC) {
-                const item = blastState.tray[trayIdx];
-                if (!item || !canPlaceBlastShape(item.shape, startR, startC)) return false;
-
-                let blocksPlaced = 0;
-                for (let r = 0; r < item.shape.length; r++) {
-                    for (let c = 0; c < item.shape[r].length; c++) {
-                        if (item.shape[r][c]) {
-                            blastState.grid[startR + r][startC + c] = item.color;
-                            blocksPlaced++;
-                        }
-                    }
-                }
-
-                blastState.tray[trayIdx] = null;
-                SoundFX.place();
-
-                let fullRows = [], fullCols = [];
-                for (let r = 0; r < 8; r++) {
-                    if (blastState.grid[r].every(cell => cell !== null)) fullRows.push(r);
-                }
-                for (let c = 0; c < 8; c++) {
-                    let allFull = true;
-                    for (let r = 0; r < 8; r++) {
-                        if (blastState.grid[r][c] === null) { allFull = false; break; }
-                    }
-                    if (allFull) fullCols.push(c);
-                }
-
-                const totalLines = fullRows.length + fullCols.length;
-                let moveScore = blocksPlaced * 10;
-
-                if (totalLines > 0) {
-                    blastState.streak++;
-                    const lineBonus = totalLines * 80 * totalLines;
-                    moveScore += lineBonus;
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Рисуем сетку 8х8
+            for(let r=0; r<8; r++) {
+                for(let c=0; c<8; c++) {
+                    ctx.fillStyle = '#171a24';
+                    ctx.beginPath();
+                    ctx.roundRect(c*cellSize + 2, r*cellSize + 2, cellSize - 4, cellSize - 4, 4);
+                    ctx.fill();
                     
-                    const toClear = new Set();
-                    fullRows.forEach(r => { for (let c = 0; c < 8; c++) toClear.add(`${r},${c}`); });
-                    fullCols.forEach(c => { for (let r = 0; r < 8; r++) toClear.add(`${r},${c}`); });
-
-                    toClear.forEach(key => {
-                        const [r, c] = key.split(',').map(Number);
-                        const colorObj = blastState.grid[r][c];
-                        const cx = metrics.boardX + (c + 0.5) * metrics.cellSize;
-                        const cy = metrics.boardY + (r + 0.5) * metrics.cellSize;
-                        
-                        clearingAnims.push({
-                            x: cx, y: cy, size: metrics.cellSize - 4, color: colorObj, scale: 1, alpha: 1
-                        });
-
-                        spawnBurstParticles(cx, cy, colorObj ? colorObj.fill : '#ffffff');
-                        blastState.grid[r][c] = null;
-                    });
-
-                    SoundFX.clear();
-                    showComboBadge(`линия! +${moveScore}`);
-                } else {
-                    blastState.streak = 0;
-                }
-
-                blastState.score += moveScore;
-                
-                const earnedCoins = Math.floor(moveScore / 40);
-                if (earnedCoins > 0) {
-                    blastState.coins += earnedCoins;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                }
-
-                if (blastState.score > blastState.best) {
-                    blastState.best = blastState.score;
-                    Storage.set('huevo_blast_best', blastState.best);
-                }
-
-                if (blastState.tray.every(t => t === null)) {
-                    spawnBlastTray();
-                }
-
-                updateUI();
-
-                if (!canAnyTrayPieceFit()) {
-                    blastState.isGameOver = true;
-                    SoundFX.gameOver();
-                    setTimeout(() => openGameOverModal(), 500);
-                }
-                return true;
-            }
-
-            function requestLeaderboardFromHuevo() {
-                const userBest = Math.max(blastState.best, blastState.score);
-                const rivals = [
-                    { name: 'кирill', score: 12400 },
-                    { name: 'мария', score: 8900 },
-                    { name: 'алексей', score: 5400 },
-                    { name: playerName, score: userBest, isUser: true }
-                ].sort((a, b) => b.score - a.score);
-
-                const container = document.getElementById('leaderboardList');
-                container.innerHTML = rivals.map((e, i) => `
-                    <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/60 border ${e.name === playerName ? 'border-slate-500' : 'border-white/5'}">
-                        <span class="font-bold text-slate-300">#${i + 1} ${e.name}</span>
-                        <span class="font-black text-amber-400">${e.score.toLocaleString()}</span>
-                    </div>
-                `).join('');
-            }
-
-            window.addEventListener('message', (event) => {
-                if (event.data && event.data.type === 'HUEVO_DONATE_SUCCESS') {
-                    const addedCoins = event.data.coins || 500;
-                    blastState.coins += addedCoins;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    updateUI();
-                    showToast(`успешно! получено +${addedCoins} кристаллов`);
-                }
-            });
-
-            function spawnBurstParticles(x, y, color) {
-                for (let i = 0; i < 6; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = 1 + Math.random() * 3;
-                    particles.push({
-                        x, y,
-                        vx: Math.cos(angle) * speed,
-                        vy: Math.sin(angle) * speed,
-                        size: 3 + Math.random() * 3,
-                        color,
-                        alpha: 1
-                    });
-                }
-            }
-
-            function showComboBadge(text) {
-                comboFloatingBadge.textContent = text;
-                comboFloatingBadge.classList.remove('opacity-0', '-translate-y-2');
-                comboFloatingBadge.classList.add('opacity-100', 'translate-y-0');
-                setTimeout(() => {
-                    comboFloatingBadge.classList.remove('opacity-100', 'translate-y-0');
-                    comboFloatingBadge.classList.add('opacity-0', '-translate-y-2');
-                }, 1200);
-            }
-
-            function showToast(msg) {
-                const toast = document.getElementById('toastNotification');
-                toast.textContent = msg;
-                toast.classList.remove('opacity-0');
-                toast.classList.add('opacity-100');
-                setTimeout(() => {
-                    toast.classList.remove('opacity-100');
-                    toast.classList.add('opacity-0');
-                }, 2000);
-            }
-
-            function drawRoundedRect(x, y, w, h, r) {
-                ctx.beginPath();
-                ctx.moveTo(x + r, y);
-                ctx.lineTo(x + w - r, y);
-                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-                ctx.lineTo(x + w, y + h - r);
-                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-                ctx.lineTo(x + r, y + h);
-                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-                ctx.lineTo(x, y + r);
-                ctx.quadraticCurveTo(x, y, x + r, y);
-                ctx.closePath();
-            }
-
-            function drawBeveledBlock(x, y, size, colorObj, alpha = 1) {
-                ctx.save();
-                ctx.globalAlpha = alpha;
-                const pad = 1.5;
-                const bx = x + pad, by = y + pad, bs = size - pad * 2;
-                const rad = 5;
-
-                drawRoundedRect(bx, by, bs, bs, rad);
-                ctx.fillStyle = colorObj.fill;
-                ctx.fill();
-
-                ctx.strokeStyle = colorObj.light || 'rgba(255,255,255,0.3)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            function renderLoop() {
-                ctx.clearRect(0, 0, metrics.w, metrics.h);
-                const { boardX, boardY, boardSize, cellSize, trayY, trayH } = metrics;
-
-                drawRoundedRect(boardX - 4, boardY - 4, boardSize + 8, boardSize + 8, 12);
-                ctx.fillStyle = '#0f1117';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-                for (let r = 0; r < 8; r++) {
-                    for (let c = 0; c < 8; c++) {
-                        const cx = boardX + c * cellSize, cy = boardY + r * cellSize;
-                        drawRoundedRect(cx + 2, cy + 2, cellSize - 4, cellSize - 4, 4);
-                        ctx.fillStyle = '#171a24';
+                    if(grid[r][c]) {
+                        ctx.fillStyle = grid[r][c];
+                        ctx.beginPath();
+                        ctx.roundRect(c*cellSize + 3, r*cellSize + 3, cellSize - 6, cellSize - 6, 5);
                         ctx.fill();
-
-                        const cellColor = blastState.grid[r][c];
-                        if (cellColor) drawBeveledBlock(cx, cy, cellSize, cellColor, 1);
-                    }
-                }
-
-                for (let i = clearingAnims.length - 1; i >= 0; i--) {
-                    const ca = clearingAnims[i];
-                    ca.scale += 0.08;
-                    ca.alpha -= 0.07;
-                    if (ca.alpha <= 0) {
-                        clearingAnims.splice(i, 1);
-                        continue;
-                    }
-                    ctx.save();
-                    ctx.globalAlpha = ca.alpha;
-                    const curSize = ca.size * ca.scale;
-                    drawBeveledBlock(ca.x - curSize/2, ca.y - curSize/2, curSize, ca.color, ca.alpha);
-                    ctx.restore();
-                }
-
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    const p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.alpha -= 0.04;
-                    if (p.alpha <= 0) {
-                        particles.splice(i, 1);
-                        continue;
-                    }
-                    ctx.save();
-                    ctx.globalAlpha = p.alpha;
-                    ctx.fillStyle = p.color;
-                    drawRoundedRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size, 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-
-                if (blastState.draggingIdx !== -1 && blastState.hoverR !== -1 && blastState.hoverC !== -1) {
-                    const item = blastState.tray[blastState.draggingIdx];
-                    if (item && canPlaceBlastShape(item.shape, blastState.hoverR, blastState.hoverC)) {
-                        for (let r = 0; r < item.shape.length; r++) {
-                            for (let c = 0; c < item.shape[r].length; c++) {
-                                if (item.shape[r][c]) {
-                                    drawBeveledBlock(boardX + (blastState.hoverC + c) * cellSize, boardY + (blastState.hoverR + r) * cellSize, cellSize, item.color, 0.35);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                const slotW = metrics.w / 3;
-                for (let i = 0; i < 3; i++) {
-                    const item = blastState.tray[i];
-                    drawRoundedRect(slotW * i + 4, trayY + 2, slotW - 8, trayH - 4, 10);
-                    ctx.fillStyle = 'rgba(23, 26, 36, 0.4)';
-                    ctx.fill();
-
-                    if (!item || blastState.draggingIdx === i) continue;
-                    if (item.scale < 1) item.scale = Math.min(1, item.scale + 0.1);
-
-                    const rows = item.shape.length, cols = item.shape[0].length;
-                    const miniCell = Math.min(cellSize * 0.55, (slotW - 16) / Math.max(rows, cols, 3)) * item.scale;
-                    const startX = (slotW * i) + (slotW - cols * miniCell) / 2;
-                    const startY = trayY + (trayH - rows * miniCell) / 2;
-
-                    for (let r = 0; r < rows; r++) {
-                        for (let c = 0; c < cols; c++) {
-                            if (item.shape[r][c]) {
-                                drawBeveledBlock(startX + c * miniCell, startY + r * miniCell, miniCell, item.color, 0.9);
-                            }
-                        }
-                    }
-                }
-
-                if (blastState.draggingIdx !== -1) {
-                    const item = blastState.tray[blastState.draggingIdx];
-                    if (item) {
-                        const rows = item.shape.length, cols = item.shape[0].length;
-                        const startX = blastState.dragX - (cols * cellSize) / 2;
-                        const startY = blastState.dragY - (rows * cellSize) / 2 - cellSize * 1.2;
-
-                        for (let r = 0; r < rows; r++) {
-                            for (let c = 0; c < cols; c++) {
-                                if (item.shape[r][c]) {
-                                    drawBeveledBlock(startX + c * cellSize, startY + r * cellSize, cellSize, item.color, 0.95);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                requestAnimationFrame(renderLoop);
-            }
-
-            function getCanvasPos(evt) {
-                const rect = canvas.getBoundingClientRect();
-                return {
-                    x: (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left,
-                    y: (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top
-                };
-            }
-
-            function handlePointerDown(evt) {
-                evt.preventDefault();
-                SoundFX.init();
-                const pos = getCanvasPos(evt);
-
-                // Использование молотка
-                if (activeTool === 'hammer') {
-                    const c = Math.floor((pos.x - metrics.boardX) / metrics.cellSize);
-                    const r = Math.floor((pos.y - metrics.boardY) / metrics.cellSize);
-                    if (r >= 0 && r < 8 && c >= 0 && c < 8 && blastState.grid[r][c] !== null) {
-                        blastState.grid[r][c] = null;
-                        blastState.hammers--;
-                        activeTool = null;
-                        SoundFX.smash();
-                        updateUI();
-                        showToast('блок уничтожен!');
-                    }
-                    return;
-                }
-
-                // Использование ракеты (очищает случайный заполненный ряд или колонку)
-                if (activeTool === 'rocket') {
-                    const filledRows = [];
-                    for (let r = 0; r < 8; r++) {
-                        if (blastState.grid[r].some(cell => cell !== null)) filledRows.push(r);
-                    }
-                    if (filledRows.length > 0) {
-                        const targetR = filledRows[Math.floor(Math.random() * filledRows.length)];
-                        for (let c = 0; c < 8; c++) blastState.grid[targetR][c] = null;
-                        blastState.rockets--;
-                        activeTool = null;
-                        SoundFX.clear();
-                        updateUI();
-                        showToast('ракета очистила линию!');
-                    } else {
-                        showToast('поле пустое для ракеты!');
-                    }
-                    return;
-                }
-
-                if (blastState.isGameOver) return;
-                if (pos.y >= metrics.trayY - 10) {
-                    const slotIdx = Math.floor(pos.x / (metrics.w / 3));
-                    if (slotIdx >= 0 && slotIdx < 3 && blastState.tray[slotIdx]) {
-                        blastState.draggingIdx = slotIdx;
-                        blastState.dragX = pos.x;
-                        blastState.dragY = pos.y;
-                        SoundFX.pick();
-                        updateHover(pos);
                     }
                 }
             }
+        }
 
-            function updateHover(pos) {
-                if (blastState.draggingIdx === -1) return;
-                const item = blastState.tray[blastState.draggingIdx];
-                if (!item) return;
+        // Управление модалкой магазина
+        document.getElementById('btnOpenShop').onclick = () => {
+            document.getElementById('shopCoins').textContent = coins;
+            document.getElementById('shopModal').classList.remove('hidden');
+        };
+        document.getElementById('btnCloseShop').onclick = () => document.getElementById('shopModal').classList.add('hidden');
 
-                const rows = item.shape.length, cols = item.shape[0].length;
-                const topLeftX = pos.x - (cols * metrics.cellSize) / 2;
-                const topLeftY = pos.y - (rows * metrics.cellSize) / 2 - metrics.cellSize * 1.2;
-
-                const c = Math.round((topLeftX - metrics.boardX) / metrics.cellSize);
-                const r = Math.round((topLeftY - metrics.boardY) / metrics.cellSize);
-
-                if (canPlaceBlastShape(item.shape, r, c)) {
-                    blastState.hoverR = r;
-                    blastState.hoverC = c;
-                } else {
-                    blastState.hoverR = -1;
-                    blastState.hoverC = -1;
-                }
+        // Донат через huEVO
+        document.getElementById('btnDonate').onclick = () => {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500 }, '*');
+            } else {
+                coins += 500;
+                localStorage.setItem('h_coins', coins);
+                document.getElementById('coinCount').textContent = coins;
+                alert('тест: +500 кристаллов добавлено!');
             }
+        };
 
-            function handlePointerMove(evt) {
-                if (blastState.draggingIdx === -1) return;
-                evt.preventDefault();
-                const pos = getCanvasPos(evt);
-                blastState.dragX = pos.x;
-                blastState.dragY = pos.y;
-                updateHover(pos);
-            }
-
-            function handlePointerUp() {
-                if (activeTool || blastState.draggingIdx === -1) return;
-                if (blastState.hoverR !== -1 && blastState.hoverC !== -1) {
-                    placeBlastPiece(blastState.draggingIdx, blastState.hoverR, blastState.hoverC);
-                }
-                blastState.draggingIdx = -1;
-                blastState.hoverR = -1;
-                blastState.hoverC = -1;
-            }
-
-            canvas.addEventListener('mousedown', handlePointerDown);
-            window.addEventListener('mousemove', handlePointerMove);
-            window.addEventListener('mouseup', handlePointerUp);
-            canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
-            window.addEventListener('touchmove', handlePointerMove, { passive: false });
-            window.addEventListener('touchend', handlePointerUp);
-
-            function updateUI() {
-                scoreDisplay.textContent = blastState.score.toLocaleString('ru-RU');
-                bestScoreDisplay.textContent = blastState.best.toLocaleString('ru-RU');
-                hammerCountEl.textContent = blastState.hammers;
-                rocketCountEl.textContent = blastState.rockets;
-                rerollCountEl.textContent = blastState.rerolls;
-                coinHeaderCount.textContent = blastState.coins;
-                shopCoinBalance.textContent = blastState.coins;
-                streakValueEl.textContent = blastState.streak;
-
-                if (activeTool) {
-                    actionBanner.classList.remove('hidden');
-                    actionBannerText.textContent = activeTool === 'hammer' ? '🔨 выберите блок для удаления' : '🚀 нажмите на поле для запуска ракеты';
-                } else {
-                    actionBanner.classList.add('hidden');
-                }
-            }
-
-            document.getElementById('btnToggleSound').addEventListener('click', () => {
-                SoundFX.enabled = !SoundFX.enabled;
-                document.getElementById('soundIcon').textContent = SoundFX.enabled ? '🔊' : '🔇';
-            });
-
-            document.getElementById('btnUseHammer').addEventListener('click', () => {
-                if (blastState.hammers <= 0) { showToast('купите молоток в магазине!'); return; }
-                activeTool = activeTool === 'hammer' ? null : 'hammer';
-                updateUI();
-            });
-
-            document.getElementById('btnUseRocket').addEventListener('click', () => {
-                if (blastState.rockets <= 0) { showToast('купите ракету в магазине!'); return; }
-                activeTool = activeTool === 'rocket' ? null : 'rocket';
-                updateUI();
-            });
-
-            document.getElementById('btnCancelAction').addEventListener('click', () => { activeTool = null; updateUI(); });
-
-            document.getElementById('btnUseReroll').addEventListener('click', () => {
-                if (blastState.rerolls <= 0) { showToast('купите обновление в магазине!'); return; }
-                blastState.rerolls--;
-                spawnBlastTray();
-                updateUI();
-                showToast('фигуры обновлены!');
-            });
-
-            document.getElementById('btnRestartGame').addEventListener('click', () => { initBlastGame(); showToast('новая игра'); });
-
-            // Покупка новой жизни при проигрыше
-            document.getElementById('btnReviveGame').addEventListener('click', () => {
-                if (blastState.coins >= 300) {
-                    blastState.coins -= 300;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    
-                    // Очищаем случайную половину поля, чтобы освободить место
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            if (Math.random() > 0.4) blastState.grid[r][c] = null;
-                        }
-                    }
-                    spawnBlastTray();
-                    blastState.isGameOver = false;
-                    document.getElementById('modalGameOver').classList.add('hidden');
-                    updateUI();
-                    showToast('новая жизнь активирована!');
-                } else {
-                    showToast('нужно 300 кристаллов для возрождения!');
-                }
-            });
-
-            document.getElementById('btnHuevoDonate').addEventListener('click', () => {
-                if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({ type: 'HUEVO_REQUEST_DONATE', amount: 500, item: 'crystals_pack' }, '*');
-                    showToast('переход к оплате huEVO...');
-                } else {
-                    blastState.coins += 500;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    updateUI();
-                    showToast('успешно: +500 кристаллов (тест доната)!');
-                }
-            });
-
-            document.getElementById('btnOpenShop').addEventListener('click', () => document.getElementById('modalShop').classList.remove('hidden'));
-            document.getElementById('btnCloseShop').addEventListener('click', () => document.getElementById('modalShop').classList.add('hidden'));
-
-            document.getElementById('btnBuyHammer').addEventListener('click', () => {
-                if (blastState.coins >= 150) {
-                    blastState.coins -= 150;
-                    blastState.hammers++;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    updateUI();
-                    showToast('молоток куплен!');
-                } else { showToast('недостаточно кристаллов!'); }
-            });
-
-            document.getElementById('btnBuyRocket').addEventListener('click', () => {
-                if (blastState.coins >= 200) {
-                    blastState.coins -= 200;
-                    blastState.rockets++;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    updateUI();
-                    showToast('ракета куплена!');
-                } else { showToast('недостаточно кристаллов!'); }
-            });
-
-            document.getElementById('btnBuyReroll').addEventListener('click', () => {
-                if (blastState.coins >= 100) {
-                    blastState.coins -= 100;
-                    blastState.rerolls++;
-                    Storage.set('huevo_blast_coins', blastState.coins);
-                    updateUI();
-                    showToast('обновление куплено!');
-                } else { showToast('недостаточно кристаллов!'); }
-            });
-
-            function openGameOverModal() {
-                document.getElementById('finalScoreText').textContent = blastState.score.toLocaleString('ru-RU');
-                document.getElementById('finalCoinsEarned').textContent = '+' + Math.floor(blastState.score / 40);
-                document.getElementById('modalGameOver').classList.remove('hidden');
-            }
-
-            document.getElementById('btnPlayAgainModal').addEventListener('click', () => {
-                document.getElementById('modalGameOver').classList.add('hidden');
-                initBlastGame();
-            });
-
-            document.getElementById('btnShareScoreModal').addEventListener('click', () => {
-                showToast('результат скопирован!');
-            });
-
-            ['Leaderboard', 'Publish', 'Rules'].forEach(name => {
-                document.getElementById(`btnOpen${name}`).addEventListener('click', () => {
-                    if (name === 'Leaderboard') requestLeaderboardFromHuevo();
-                    document.getElementById(`modal${name}`).classList.remove('hidden');
-                });
-                document.getElementById(`btnClose${name}`).addEventListener('click', () => document.getElementById(`modal${name}`).classList.add('hidden'));
-            });
-            document.getElementById('btnCloseRulesBottom').addEventListener('click', () => document.getElementById('modalRules').classList.add('hidden'));
-            document.getElementById('btnGotItPublish').addEventListener('click', () => document.getElementById('modalPublish').classList.add('hidden'));
-
-            document.getElementById('btnSavePlayerName').addEventListener('click', () => {
-                const val = document.getElementById('playerNameInput').value.trim();
-                if (val) {
-                    playerName = val;
-                    Storage.set('huevo_player_name', playerName);
-                    showToast('имя сохранено');
-                    requestLeaderboardFromHuevo();
-                }
-            });
-
-            window.addEventListener('resize', resizeCanvas);
-            window.addEventListener('load', () => {
-                initBlastGame();
-                resizeCanvas();
-                requestAnimationFrame(renderLoop);
-            });
-        })();
+        window.addEventListener('resize', resize);
+        window.addEventListener('load', resize);
     </script>
 </body>
 </html>
